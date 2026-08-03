@@ -116,6 +116,7 @@ body{font-family:'Segoe UI',system-ui,-apple-system,sans-serif;background:var(--
 .tel-link:hover{text-decoration:underline;}
 .action-btn{background:none;border:none;color:var(--gray3);cursor:pointer;font-size:13px;padding:3px 6px;border-radius:2px;transition:all 0.2s;}
 .action-btn:hover{color:var(--red);background:#FFF0EF;}
+.action-btn[title="Edit"]:hover{color:var(--navy);background:#EEF2F9;}
 /* PILLS */
 .pill{display:inline-block;padding:2px 9px;border-radius:2px;font-size:10px;letter-spacing:1px;text-transform:uppercase;font-weight:700;}
 .pill-active{background:#E8F5EE;color:var(--green);}
@@ -147,6 +148,18 @@ body{font-family:'Segoe UI',system-ui,-apple-system,sans-serif;background:var(--
 .file-size{font-size:10px;color:var(--gray3);margin-top:1px;}
 .file-del{position:absolute;top:5px;right:5px;background:rgba(0,0,0,0.55);color:var(--white);border:none;width:20px;height:20px;border-radius:50%;font-size:11px;cursor:pointer;display:none;align-items:center;justify-content:center;}
 .file-card:hover .file-del{display:flex;}
+/* VIDEO EMBED */
+.video-embed-form{background:var(--white);border:1px solid var(--gray2);padding:16px 18px;margin-bottom:18px;display:flex;gap:10px;align-items:flex-end;flex-wrap:wrap;}
+.video-embed-form .form-input{flex:1;min-width:160px;}
+.video-card{background:var(--white);border:1px solid var(--gray2);overflow:hidden;cursor:pointer;transition:box-shadow 0.2s;position:relative;}
+.video-card:hover{box-shadow:0 4px 14px rgba(0,0,0,0.12);}
+.video-thumb{height:110px;background:#000;position:relative;overflow:hidden;}
+.video-thumb img{width:100%;height:100%;object-fit:cover;opacity:0.88;}
+.video-play{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,0.28);}
+.video-play svg{filter:drop-shadow(0 2px 6px rgba(0,0,0,0.5));}
+.video-meta{padding:8px 10px;}
+.video-title{font-size:11px;color:var(--black);font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.video-source{font-size:10px;color:var(--gray3);margin-top:2px;}
 /* BUTTONS */
 .toolbar{display:flex;align-items:center;gap:10px;margin-bottom:14px;}
 .btn-primary{padding:8px 18px;background:var(--navy);color:var(--white);border:none;cursor:pointer;font-size:11px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;transition:opacity 0.2s;}
@@ -384,7 +397,7 @@ body{font-family:'Segoe UI',system-ui,-apple-system,sans-serif;background:var(--
               <button class="card-btn" onclick="openFormModal('team')">+ Add Member</button>
             </div>
             <div class="card-body" style="padding:0;">
-              <table class="team-table"><thead><tr><th>Role</th><th>Name / Company</th><th>Phone</th><th>Email</th><th></th></tr></thead><tbody id="team-tbody"></tbody></table>
+              <table class="team-table"><thead><tr><th>Role</th><th>Name / Company</th><th>Phone</th><th>Email</th><th style="width:80px;text-align:right;padding-right:12px;">Actions</th></tr></thead><tbody id="team-tbody"></tbody></table>
             </div>
           </div>
         </div>
@@ -414,9 +427,14 @@ body{font-family:'Segoe UI',system-ui,-apple-system,sans-serif;background:var(--
 
       <!-- SITE VIDEOS -->
       <div class="page" id="page-videos">
-        <div class="page-header"><div class="page-title">Site Videos</div><div class="page-subtitle">Walk-throughs, inspections, and progress recordings</div></div>
-        <div class="upload-zone" id="video-drop-zone"><input type="file" accept="video/*" multiple onchange="handleFiles(event,'videos')"/><div class="upload-label">Upload Site Videos</div><div class="upload-hint">MP4 &middot; MOV &middot; AVI &middot; WEBM</div><div class="uploading-bar" id="video-upload-bar"><div class="uploading-progress" id="video-upload-prog"></div></div></div>
-        <div class="file-grid" id="videos-grid"><div class="empty-state">No videos uploaded yet</div></div>
+        <div class="page-header"><div class="page-title">Site Videos</div><div class="page-subtitle">Paste a YouTube link — walk-throughs, inspections, and progress recordings</div></div>
+        <div class="video-embed-form">
+          <div style="flex:1;min-width:160px;"><label class="form-label" style="font-size:10px;letter-spacing:1.5px;text-transform:uppercase;color:var(--gray3);font-weight:700;display:block;margin-bottom:4px;">Video Title</label><input class="form-input" id="vid-title-input" placeholder="e.g. Rooftop inspection — June 2026"/></div>
+          <div style="flex:2;min-width:220px;"><label class="form-label" style="font-size:10px;letter-spacing:1.5px;text-transform:uppercase;color:var(--gray3);font-weight:700;display:block;margin-bottom:4px;">YouTube URL</label><input class="form-input" id="vid-url-input" placeholder="https://www.youtube.com/watch?v=..."/></div>
+          <button class="btn-primary" onclick="addVideoEmbed()" style="white-space:nowrap;">+ Add Video</button>
+        </div>
+        <p style="font-size:11px;color:var(--gray3);margin:-10px 0 16px;"><strong style="color:var(--navy);">How it works:</strong> Upload your video to YouTube (set to <em>Unlisted</em> so only people with the link can view it), then paste the URL above. No file storage — instant playback on any device.</p>
+        <div class="file-grid" id="videos-grid"><div class="empty-state">No videos added yet</div></div>
       </div>
 
       <!-- SUBMITTALS -->
@@ -544,6 +562,31 @@ function initFirebaseListeners() {
     snap.forEach(doc => { const d={...doc.data(),fsId:doc.id}; scheduleCount=Math.max(scheduleCount,d.num||0); appendScheduleRow(d); });
     document.getElementById('schedule-empty').style.display = snap.empty?'':'none';
   });
+  db.collection('photos').orderBy('_ts').onSnapshot(snap => {
+    store.photos=[];
+    const grid=document.getElementById('photos-grid');
+    grid.innerHTML='';
+    snap.forEach(doc => {
+      const d={...doc.data(),fsId:doc.id};
+      store.photos.push(d);
+      const card=makeFileCard({name:d.name,size:d.size,type:d.mimeType||'image/jpeg'},d.url,'photos',false);
+      grid.appendChild(card);
+    });
+    if(snap.empty) grid.innerHTML='<div class="empty-state">No photos uploaded yet</div>';
+    document.getElementById('stat-photos').textContent=store.photos.length;
+  });
+  db.collection('videos').orderBy('_ts').onSnapshot(snap => {
+    store.videos=[];
+    const grid=document.getElementById('videos-grid');
+    grid.innerHTML='';
+    snap.forEach(doc => {
+      const d={...doc.data(),fsId:doc.id};
+      store.videos.push(d);
+      renderVideoCard(d);
+    });
+    if(snap.empty) grid.innerHTML='<div class="empty-state">No videos added yet</div>';
+    document.getElementById('stat-videos').textContent=store.videos.length;
+  });
   // Seed default team if empty
   db.collection('team').limit(1).get().then(snap => {
     if (snap.empty) seedTeamToFirebase();
@@ -560,7 +603,7 @@ function enterSite() {
 
 /* ── NAV ── */
 const pageCfg={dashboard:{label:'Dashboard',action:null},documents:{label:'Project Documents',action:'docs'},photos:{label:'Site Photos',action:'photos'},videos:{label:'Site Videos',action:'videos'},submittals:{label:'Submittals',action:'submittal'},rfis:{label:'RFIs',action:'rfi'},schedule:{label:'Schedule',action:'schedule'}};
-const actionLabels={docs:'+ Upload',photos:'+ Upload',videos:'+ Upload',submittal:'+ New Submittal',rfi:'+ New RFI',schedule:'+ Add Phase'};
+const actionLabels={docs:'+ Upload',photos:'+ Upload',videos:'+ Add Video',submittal:'+ New Submittal',rfi:'+ New RFI',schedule:'+ Add Phase'};
 
 function initNav() {
   document.querySelectorAll('.nav-item[data-page]').forEach(el => el.addEventListener('click',()=>navigate(el.dataset.page,el)));
@@ -578,7 +621,7 @@ function navigate(id,el) {
 function topbarAction() {
   const a=document.getElementById('topbar-action-btn').dataset.action;
   if(a==='photos') document.querySelector('#photo-drop-zone input')?.click();
-  else if(a==='videos') document.querySelector('#video-drop-zone input')?.click();
+  else if(a==='videos') document.getElementById('vid-url-input')?.focus();
   else if(a==='submittal') openFormModal('submittal');
   else if(a==='rfi') openFormModal('rfi');
   else if(a==='schedule') addScheduleRow();
@@ -611,7 +654,7 @@ function seedTeamLocal() {
 function renderTeamRow(t) {
   const cls=ROLE_CLASS[t.role]||'role-other';
   const tr=document.createElement('tr'); tr.id='team-row-'+t.id;
-  tr.innerHTML=`<td><span class="role-badge ${cls}">${t.role}</span></td><td style="font-weight:600">${t.name}</td><td><a class="tel-link" href="tel:${t.phone}">${t.phone||'—'}</a></td><td style="color:var(--gray3)">${t.email?'<a class="tel-link" href="mailto:'+t.email+'">'+t.email+'</a>':'—'}</td><td style="text-align:right;padding-right:12px;"><button class="action-btn" onclick="removeTeamMember('${t.id}')">&#x2715;</button></td>`;
+  tr.innerHTML=`<td><span class="role-badge ${cls}">${t.role}</span></td><td style="font-weight:600">${t.name}</td><td><a class="tel-link" href="tel:${t.phone}">${t.phone||'—'}</a></td><td style="color:var(--gray3)">${t.email?'<a class="tel-link" href="mailto:'+t.email+'">'+t.email+'</a>':'—'}</td><td style="text-align:right;padding-right:12px;white-space:nowrap;"><button class="action-btn" title="Edit" onclick="openEditTeamModal('${t.id}','${(t.role||'').replace(/'/g,'&#39;')}','${(t.name||'').replace(/'/g,'&#39;')}','${(t.phone||'').replace(/'/g,'&#39;')}','${(t.email||'').replace(/'/g,'&#39;')}')">&#9998;</button> <button class="action-btn" title="Remove" onclick="removeTeamMember('${t.id}')">&#x2715;</button></td>`;
   document.getElementById('team-tbody').appendChild(tr);
 }
 async function removeTeamMember(id) {
@@ -623,15 +666,65 @@ async function removeTeamMember(id) {
 async function saveTeamMember() {
   const name=document.getElementById('fm-team-name').value.trim(); if(!name) return;
   const data={role:document.getElementById('fm-team-role').value,name,phone:document.getElementById('fm-team-phone').value.trim(),email:document.getElementById('fm-team-email').value.trim(),order:Date.now()};
-  const id=await fsAdd('team',data);
-  if(!FIREBASE_READY) renderTeamRow({...data,id});
-  logActivity('Team member added: '+name);
   closeFormModal();
+  /* Optimistic render — snapshot listener will replace it when Firebase confirms */
+  const tempId='pending-'+Date.now();
+  renderTeamRow({...data,id:tempId});
+  try {
+    const id=await fsAdd('team',data);
+    /* If Firebase is off, tempId row stays. If on, snapshot re-renders and removes temp row. */
+    if(!FIREBASE_READY){
+      const r=document.getElementById('team-row-'+tempId);
+      if(r) r.id='team-row-'+id;
+    }
+  } catch(err){ showToast('Save failed — check connection'); console.error(err); }
+  logActivity('Team member added: '+name);
+}
+function openEditTeamModal(id,role,name,phone,email) {
+  const body=document.getElementById('form-modal-body');
+  document.getElementById('form-modal-title').textContent='Edit Team Member';
+  const roles=['General Contractor','Electrical Contractor','Project Manager','Stakeholder','Architect','Structural Engineer','MEP Engineer','Civil Engineer','Inspector','Other'];
+  const opts=roles.map(r=>`<option${r===role?' selected':''}>${r}</option>`).join('');
+  body.innerHTML=`<div class="form-group"><label class="form-label">Role</label><select class="form-control" id="fm-team-role">${opts}</select></div><div class="form-group"><label class="form-label">Name / Company</label><input class="form-control" id="fm-team-name" value="${name}" placeholder="Full name or company"/></div><div class="form-row-2"><div class="form-group"><label class="form-label">Phone</label><input class="form-control" id="fm-team-phone" type="tel" value="${phone}" placeholder="555-000-0000"/></div><div class="form-group"><label class="form-label">Email</label><input class="form-control" id="fm-team-email" type="email" value="${email}" placeholder="name@company.com"/></div></div><div class="form-actions"><button class="btn-cancel" onclick="closeFormModal()">Cancel</button><button class="btn-save" onclick="updateTeamMember('${id}')">Save Changes</button></div>`;
+  document.getElementById('form-modal').classList.add('open');
+}
+async function updateTeamMember(id) {
+  const name=document.getElementById('fm-team-name').value.trim(); if(!name) return;
+  const data={role:document.getElementById('fm-team-role').value,name,phone:document.getElementById('fm-team-phone').value.trim(),email:document.getElementById('fm-team-email').value.trim()};
+  closeFormModal();
+  /* Update row optimistically */
+  const row=document.getElementById('team-row-'+id);
+  if(row){const cls=ROLE_CLASS[data.role]||'role-other';row.querySelector('.role-badge').className='role-badge '+cls;row.querySelector('.role-badge').textContent=data.role;row.cells[1].style.fontWeight='600';row.cells[1].textContent=data.name;row.cells[2].innerHTML=data.phone?`<a class="tel-link" href="tel:${data.phone}">${data.phone}</a>`:'—';row.cells[3].innerHTML=data.email?`<a class="tel-link" href="mailto:${data.email}">${data.email}</a>`:'—';}
+  try { await fsUpdate('team',id,data); logActivity('Team member updated: '+name); }
+  catch(err){ showToast('Update failed — check connection'); console.error(err); }
 }
 
 /* ── FILE UPLOADS ── */
 const store={photos:[],videos:[]};
 function fmtBytes(b){return b<1048576?(b/1024).toFixed(1)+'KB':(b/1048576).toFixed(1)+'MB';}
+
+/* Client-side image compression — resizes to maxPx and re-encodes as JPEG ~78% quality */
+async function compressImage(file,maxPx=1800,quality=0.78){
+  return new Promise(resolve=>{
+    const img=new Image();
+    const reader=new FileReader();
+    reader.onload=e=>{
+      img.onload=()=>{
+        let w=img.width,h=img.height;
+        if(w>maxPx||h>maxPx){
+          if(w>h){h=Math.round(h*maxPx/w);w=maxPx;}
+          else{w=Math.round(w*maxPx/h);h=maxPx;}
+        }
+        const canvas=document.createElement('canvas');
+        canvas.width=w;canvas.height=h;
+        canvas.getContext('2d').drawImage(img,0,0,w,h);
+        canvas.toBlob(blob=>resolve(blob||file),'image/jpeg',quality);
+      };
+      img.src=e.target.result;
+    };
+    reader.readAsDataURL(file);
+  });
+}
 
 async function handleFiles(e,type) {
   const files=Array.from(e.target.files);
@@ -645,14 +738,17 @@ async function handleFiles(e,type) {
     const card=makeFileCard(f,localUrl,type,true);
     grid.appendChild(card);
     try {
-      const url=await uploadToStorage(type,f,pct=>{if(prog)prog.style.width=pct+'%';});
-      store[type].push({name:f.name,size:f.size,url,type:f.type});
+      /* Compress images before upload — keeps Storage lean */
+      const uploadBlob=f.type.startsWith('image/')?await compressImage(f):f;
+      const uploadFile=f.type.startsWith('image/')?new File([uploadBlob],f.name,{type:'image/jpeg'}):f;
+      const url=await uploadToStorage(type,uploadFile,pct=>{if(prog)prog.style.width=pct+'%';});
+      store[type].push({name:f.name,size:uploadBlob.size,url,type:'image/jpeg'});
       card.querySelector('.file-uploading')?.remove();
-      const img=card.querySelector('img'); const vid=card.querySelector('video');
-      if(img) img.src=url; if(vid) vid.src=url;
-      card.querySelector('.file-thumb').onclick=()=>openModal(url,f.type);
-      if(FIREBASE_READY) await db.collection(type).add({name:f.name,size:f.size,url,mimeType:f.type,_ts:firebase.firestore.FieldValue.serverTimestamp()});
-      logActivity('Uploaded '+f.name);
+      const img=card.querySelector('img');
+      if(img) img.src=url;
+      card.querySelector('.file-thumb').onclick=()=>openModal(url,'image/jpeg');
+      if(FIREBASE_READY) await db.collection(type).add({name:f.name,size:uploadBlob.size,url,mimeType:'image/jpeg',_ts:firebase.firestore.FieldValue.serverTimestamp()});
+      logActivity('Uploaded '+f.name+' (compressed)');
     } catch(err){console.error(err);}
   }
   if(bar) bar.classList.remove('active');
@@ -676,6 +772,46 @@ function removeFile(btn,type,name) {
   if(!grid.querySelector('.file-card')) grid.innerHTML='<div class="empty-state">No files uploaded yet</div>';
   updateStats();
 }
+
+/* ── YOUTUBE VIDEO EMBEDS ── */
+function extractYouTubeId(url){
+  const m=url.match(/(?:youtu\.be\/|youtube\.com\/(?:watch\?v=|embed\/|shorts\/|live\/))([^&\n?#]+)/);
+  return m?m[1]:null;
+}
+async function addVideoEmbed(){
+  const titleEl=document.getElementById('vid-title-input');
+  const urlEl=document.getElementById('vid-url-input');
+  const title=(titleEl.value.trim()||'Untitled Video');
+  const rawUrl=urlEl.value.trim();
+  if(!rawUrl){urlEl.focus();return;}
+  const ytId=extractYouTubeId(rawUrl);
+  if(!ytId){showToast('Paste a valid YouTube URL (youtube.com or youtu.be)');urlEl.focus();return;}
+  const data={title,youtubeId:ytId,youtubeUrl:rawUrl,_ts:FIREBASE_READY?firebase.firestore.FieldValue.serverTimestamp():Date.now()};
+  let fsId=String(Date.now());
+  if(FIREBASE_READY){const ref=await db.collection('videos').add(data);fsId=ref.id;}
+  store.videos.push({...data,fsId});
+  renderVideoCard({...data,fsId});
+  document.getElementById('videos-grid').querySelector('.empty-state')?.remove();
+  titleEl.value='';urlEl.value='';
+  updateStats();logActivity('Video added: '+title);
+}
+function renderVideoCard(v){
+  const grid=document.getElementById('videos-grid');
+  grid.querySelector('.empty-state')?.remove();
+  const div=document.createElement('div');div.className='video-card';div.id='vc-'+v.fsId;
+  div.innerHTML=`<div class="video-thumb"><img src="https://img.youtube.com/vi/${v.youtubeId}/hqdefault.jpg" loading="lazy"/><div class="video-play"><svg width="44" height="44" viewBox="0 0 44 44"><circle cx="22" cy="22" r="22" fill="rgba(255,255,255,0.92)"/><polygon points="18,14 34,22 18,30" fill="#0A2342"/></svg></div></div><div class="video-meta"><div class="video-title" title="${v.title}">${v.title}</div><div class="video-source">YouTube · Unlisted</div></div><button class="file-del" onclick="removeVideoCard(this,'${v.fsId}')">&#x2715;</button>`;
+  div.querySelector('.video-thumb').addEventListener('click',()=>openModal(v.youtubeId,'youtube'));
+  grid.appendChild(div);
+}
+async function removeVideoCard(btn,fsId){
+  btn.closest('.video-card').remove();
+  store.videos=store.videos.filter(v=>v.fsId!==fsId);
+  if(FIREBASE_READY) await db.collection('videos').doc(fsId).delete();
+  const grid=document.getElementById('videos-grid');
+  if(!grid.querySelector('.video-card')) grid.innerHTML='<div class="empty-state">No videos added yet</div>';
+  updateStats();
+}
+
 function updateStats() {
   document.getElementById('stat-photos').textContent=store.photos.length;
   document.getElementById('stat-videos').textContent=store.videos.length;
@@ -855,16 +991,18 @@ function logActivity(text){
 /* ── MODAL ── */
 function openModal(url,mime){
   const mc=document.getElementById('modal-content');
-  if(mime&&mime.startsWith('video/')) mc.innerHTML=`<video src="${url}" controls autoplay style="max-width:90vw;max-height:88vh;"></video>`;
-  else if(mime&&mime.startsWith('image/')) mc.innerHTML=`<img src="${url}" style="max-width:90vw;max-height:88vh;object-fit:contain;"/>`;
-  else{window.open(url,'_blank');return;}
+  if(mime==='youtube'){
+    mc.innerHTML=`<iframe src="https://www.youtube.com/embed/${url}?autoplay=1&rel=0" frameborder="0" allow="autoplay;encrypted-media" allowfullscreen style="width:min(90vw,880px);aspect-ratio:16/9;"></iframe>`;
+  } else if(mime&&mime.startsWith('image/')) {
+    mc.innerHTML=`<img src="${url}" style="max-width:90vw;max-height:88vh;object-fit:contain;"/>`;
+  } else {window.open(url,'_blank');return;}
   document.getElementById('modal').classList.add('open');
 }
 function closeModal(){document.getElementById('modal').classList.remove('open');document.getElementById('modal-content').innerHTML='';}
 document.addEventListener('keydown',e=>{if(e.key==='Escape'){closeModal();closeFormModal();}});
 
 /* ── DRAG & DROP ── */
-['photo-drop-zone','video-drop-zone'].forEach(id=>{
+['photo-drop-zone'].forEach(id=>{
   const z=document.getElementById(id); if(!z) return;
   z.addEventListener('dragover',e=>{e.preventDefault();z.classList.add('drag-over');});
   z.addEventListener('dragleave',()=>z.classList.remove('drag-over'));
