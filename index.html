@@ -57,7 +57,28 @@ body{font-family:'Segoe UI',system-ui,-apple-system,sans-serif;background:var(--
 .nav-badge{margin-left:auto;background:var(--navy3);color:var(--gray3);font-size:10px;padding:1px 7px;border-radius:10px;}
 .nav-item.locked{opacity:0.4;cursor:default;}
 .nav-item.locked:hover{background:transparent;color:rgba(255,255,255,0.4);}
-.sidebar-footer{margin-top:auto;padding:14px 18px;border-top:1px solid rgba(255,255,255,0.06);font-size:10px;color:var(--gray3);}
+.sidebar-footer{margin-top:auto;padding:10px 14px;border-top:1px solid rgba(255,255,255,0.06);font-size:10px;color:var(--gray3);}
+/* SIDEBAR COLLAPSE (desktop) */
+.sidebar-collapse-btn{width:100%;background:none;border:none;border-top:1px solid rgba(255,255,255,0.06);color:rgba(255,255,255,0.35);cursor:pointer;padding:10px;font-size:11px;letter-spacing:1px;display:flex;align-items:center;justify-content:flex-end;gap:6px;transition:color 0.2s;}
+.sidebar-collapse-btn:hover{color:var(--accent);}
+.sidebar-collapse-btn svg{transition:transform 0.25s;}
+.sidebar.collapsed{width:56px;}
+.sidebar.collapsed .sidebar-brand,.sidebar.collapsed .sidebar-sub,
+.sidebar.collapsed .sidebar-section-label,.sidebar.collapsed .nav-badge,
+.sidebar.collapsed .sidebar-footer .fb-indicator span,
+.sidebar.collapsed .sidebar-footer>:first-child{display:none;}
+.sidebar.collapsed .sidebar-header{padding:16px 10px;}
+.sidebar.collapsed .nav-item{padding:12px;justify-content:center;}
+.sidebar.collapsed .nav-icon{width:18px;height:18px;opacity:0.85;}
+.sidebar.collapsed .sidebar-collapse-btn{justify-content:center;}
+.sidebar.collapsed .sidebar-collapse-btn svg{transform:rotate(180deg);}
+.sidebar.collapsed .sidebar-footer{padding:10px;text-align:center;}
+/* Tooltip on collapsed nav items */
+.sidebar.collapsed .nav-item{position:relative;}
+.sidebar.collapsed .nav-item::after{content:attr(data-label);position:absolute;left:calc(100% + 8px);top:50%;transform:translateY(-50%);background:var(--navy2);color:var(--white);font-size:11px;padding:4px 10px;border-radius:4px;white-space:nowrap;opacity:0;pointer-events:none;transition:opacity 0.15s;z-index:300;}
+.sidebar.collapsed .nav-item:hover::after{opacity:1;}
+/* Smooth sidebar width transition */
+.sidebar{transition:width 0.25s ease, transform 0.28s ease;}
 .fb-indicator{display:inline-flex;align-items:center;gap:5px;margin-top:6px;font-size:10px;color:var(--gray3);}
 .fb-dot{width:6px;height:6px;border-radius:50%;background:var(--gray3);}
 .fb-dot.live{background:var(--green);}
@@ -147,7 +168,7 @@ tr[data-mode="edit"]{background:#F8FAFF;}
 .file-thumb{height:100px;background:var(--gray);display:flex;align-items:center;justify-content:center;overflow:hidden;}
 .file-thumb img,.file-thumb video{width:100%;height:100%;object-fit:cover;}
 .file-thumb.ext-thumb{font-size:22px;font-weight:800;letter-spacing:1px;}
-.file-uploading{position:absolute;inset:0;background:rgba(255,255,255,0.85);display:flex;align-items:center;justify-content:center;font-size:11px;color:var(--navy);letter-spacing:1px;}
+.file-uploading{position:absolute;inset:0;background:rgba(10,35,66,0.72);display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:700;color:var(--accent);letter-spacing:1px;border-radius:inherit;backdrop-filter:blur(2px);transition:opacity 0.2s;}
 .file-meta{padding:7px 9px;}
 .file-name{font-size:11px;color:var(--black);font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
 .file-size{font-size:10px;color:var(--gray3);margin-top:1px;}
@@ -379,6 +400,92 @@ tr[data-mode="edit"]{background:#F8FAFF;}
   .data-table th:nth-child(3),.data-table td:nth-child(3),
   .data-table th:nth-child(4),.data-table td:nth-child(4){display:none;}
 }
+
+/* ══ MOBILE BOTTOM NAV ════════════════════════════════ */
+.bottom-nav{display:none;}
+@media (max-width:768px){
+  /* Push content up so it isn't hidden behind the nav */
+  .content{padding-bottom:80px;}
+
+  /* Bottom Nav Bar */
+  .bottom-nav{
+    display:flex;
+    position:fixed;bottom:0;left:0;right:0;
+    height:60px;
+    background:var(--navy2);
+    border-top:1px solid rgba(255,255,255,0.08);
+    z-index:190;
+    align-items:stretch;
+    box-shadow:0 -4px 18px rgba(0,0,0,0.35);
+    padding-bottom:env(safe-area-inset-bottom,0);
+  }
+  .bn-item{
+    flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;
+    background:none;border:none;color:rgba(255,255,255,0.5);font-size:9px;letter-spacing:0.5px;
+    gap:3px;cursor:pointer;transition:color 0.18s;-webkit-tap-highlight-color:transparent;
+    padding:0;
+  }
+  .bn-item.active{color:var(--accent);}
+  .bn-icon{width:20px;height:20px;}
+  .bn-fab-space{pointer-events:none;opacity:0;} /* gap for FAB */
+
+  /* FAB */
+  .mobile-fab{
+    display:flex;
+    position:fixed;
+    bottom:calc(28px + env(safe-area-inset-bottom,0px));
+    left:50%;transform:translateX(-50%);
+    width:54px;height:54px;border-radius:50%;
+    background:var(--accent);color:var(--navy2);
+    border:none;cursor:pointer;
+    align-items:center;justify-content:center;
+    box-shadow:0 4px 18px rgba(201,169,110,0.55);
+    z-index:195;
+    -webkit-tap-highlight-color:transparent;
+    transition:transform 0.18s, box-shadow 0.18s;
+  }
+  .mobile-fab:active{transform:translateX(-50%) scale(0.93);}
+
+  /* Sidebar: hide the collapse button on mobile (irrelevant) */
+  .sidebar-collapse-btn{display:none;}
+
+  /* More Drawer */
+  .more-drawer-overlay{
+    display:none;position:fixed;inset:0;background:rgba(0,0,0,0.45);z-index:210;
+  }
+  .more-drawer-overlay.open{display:block;}
+  .more-drawer{
+    position:fixed;bottom:0;left:0;right:0;
+    background:var(--navy2);
+    border-radius:18px 18px 0 0;
+    z-index:220;
+    padding:8px 20px 20px;
+    transform:translateY(100%);
+    transition:transform 0.28s ease;
+    padding-bottom:calc(20px + env(safe-area-inset-bottom,0px));
+  }
+  .more-drawer.open{transform:translateY(0);}
+  .more-drawer-handle{width:36px;height:4px;border-radius:2px;background:rgba(255,255,255,0.2);margin:0 auto 18px;}
+  .more-drawer-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;}
+  .more-item{
+    display:flex;flex-direction:column;align-items:center;gap:7px;
+    background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.08);
+    border-radius:10px;padding:14px 8px;
+    color:rgba(255,255,255,0.8);font-size:11px;
+    cursor:pointer;-webkit-tap-highlight-color:transparent;
+  }
+  .more-item svg{width:22px;height:22px;}
+  .more-item:active{background:rgba(201,169,110,0.15);}
+}
+/* FAB hidden on desktop */
+@media (min-width:769px){
+  .mobile-fab{display:none;}
+  .more-drawer,.more-drawer-overlay{display:none !important;}
+}
+/* Sidebar footer meta vs collapse layout */
+.sidebar-footer{display:flex;flex-direction:column;gap:0;}
+.sidebar-footer-meta{padding:4px 0 6px;}
+.sidebar.collapsed .collapse-label{display:none;}
 </style>
 </head>
 <body>
@@ -404,38 +511,42 @@ tr[data-mode="edit"]{background:#F8FAFF;}
       <div class="sidebar-sub">Palm Springs, CA</div>
     </div>
     <div class="sidebar-section-label">Overview</div>
-    <div class="nav-item active" data-page="dashboard">
+    <div class="nav-item active" data-page="dashboard" data-label="Dashboard">
       <svg class="nav-icon" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>Dashboard
     </div>
     <div class="sidebar-section-label">Project Docs</div>
-    <div class="nav-item" data-page="documents">
+    <div class="nav-item" data-page="documents" data-label="Documents">
       <svg class="nav-icon" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>Project Documents
     </div>
-    <div class="nav-item" data-page="photos">
+    <div class="nav-item" data-page="photos" data-label="Photos">
       <svg class="nav-icon" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>Site Photos
     </div>
-    <div class="nav-item" data-page="videos">
+    <div class="nav-item" data-page="videos" data-label="Videos">
       <svg class="nav-icon" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2"/></svg>Site Videos
     </div>
     <div class="sidebar-section-label">Construction</div>
-    <div class="nav-item" data-page="submittals">
+    <div class="nav-item" data-page="submittals" data-label="Submittals">
       <svg class="nav-icon" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path d="M9 12l2 2 4-4m6 2a9 9 0 1 1-18 0 9 9 0 0 1 18 0z"/></svg>Submittals
     </div>
-    <div class="nav-item" data-page="rfis">
+    <div class="nav-item" data-page="rfis" data-label="RFIs">
       <svg class="nav-icon" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>RFIs
     </div>
-    <div class="nav-item" data-page="schedule">
+    <div class="nav-item" data-page="schedule" data-label="Schedule">
       <svg class="nav-icon" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>Schedule
     </div>
-    <div class="nav-item" data-page="meetings">
+    <div class="nav-item" data-page="meetings" data-label="Meetings">
       <svg class="nav-icon" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>Meeting Notes
     </div>
     <div class="nav-item locked">
       <svg class="nav-icon" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>Reports<span class="nav-badge">Soon</span>
     </div>
     <div class="sidebar-footer">
-      Francesca's Building &copy; 2026
-      <div class="fb-indicator"><div class="fb-dot" id="fb-dot"></div><span id="fb-status-text">Connecting...</span></div>
+      <div class="sidebar-footer-meta">Francesca's Building &copy; 2026
+      <div class="fb-indicator"><div class="fb-dot" id="fb-dot"></div><span id="fb-status-text">Connecting...</span></div></div>
+      <button class="sidebar-collapse-btn" onclick="toggleSidebarCollapse()" title="Collapse sidebar">
+        <span class="collapse-label">Collapse</span>
+        <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>
+      </button>
     </div>
   </nav>
 
@@ -598,6 +709,56 @@ tr[data-mode="edit"]{background:#F8FAFF;}
 <div id="form-modal"><div class="form-box form-modal-box"><div class="form-box-head"><span class="form-box-title" id="form-modal-title">New</span><button class="form-box-close" onclick="closeFormModal()">&#x2715;</button></div><div class="form-box-body" id="form-modal-body"></div></div></div>
 <div id="pwa-toast"></div>
 
+<!-- MOBILE BOTTOM NAV -->
+<nav class="bottom-nav" id="bottom-nav">
+  <button class="bn-item active" data-page="dashboard" onclick="navigate('dashboard',null);syncBottomNav('dashboard')">
+    <svg class="bn-icon" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
+    <span>Home</span>
+  </button>
+  <button class="bn-item" data-page="photos" onclick="navigate('photos',null);syncBottomNav('photos')">
+    <svg class="bn-icon" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+    <span>Photos</span>
+  </button>
+  <button class="bn-item bn-fab-space" aria-hidden="true"></button>
+  <button class="bn-item" data-page="meetings" onclick="navigate('meetings',null);syncBottomNav('meetings')">
+    <svg class="bn-icon" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
+    <span>Notes</span>
+  </button>
+  <button class="bn-item" data-page="rfis" onclick="navigate('rfis',null);syncBottomNav('rfis')">
+    <svg class="bn-icon" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+    <span>RFIs</span>
+  </button>
+  <button class="bn-item" onclick="openMoreDrawer()">
+    <svg class="bn-icon" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><circle cx="5" cy="12" r="1.5"/><circle cx="12" cy="12" r="1.5"/><circle cx="19" cy="12" r="1.5"/></svg>
+    <span>More</span>
+  </button>
+</nav>
+
+<!-- FAB -->
+<button class="mobile-fab" id="mobile-fab" onclick="fabAction()" title="Add">
+  <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+</button>
+
+<!-- MORE DRAWER (mobile) -->
+<div class="more-drawer-overlay" id="more-overlay" onclick="closeMoreDrawer()"></div>
+<div class="more-drawer" id="more-drawer">
+  <div class="more-drawer-handle"></div>
+  <div class="more-drawer-grid">
+    <button class="more-item" onclick="navigate('documents',null);syncBottomNav('documents');closeMoreDrawer()">
+      <svg fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>Documents
+    </button>
+    <button class="more-item" onclick="navigate('videos',null);syncBottomNav('videos');closeMoreDrawer()">
+      <svg fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2"/></svg>Videos
+    </button>
+    <button class="more-item" onclick="navigate('submittals',null);syncBottomNav('submittals');closeMoreDrawer()">
+      <svg fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path d="M9 12l2 2 4-4m6 2a9 9 0 1 1-18 0 9 9 0 0 1 18 0z"/></svg>Submittals
+    </button>
+    <button class="more-item" onclick="navigate('schedule',null);syncBottomNav('schedule');closeMoreDrawer()">
+      <svg fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>Schedule
+    </button>
+  </div>
+</div>
+
 <script>
 /* ════════════════════════════════════════════
    FIREBASE — francesca-building project
@@ -628,6 +789,11 @@ try {
 document.addEventListener('DOMContentLoaded', () => {
   document.getElementById('building-photo').style.backgroundImage = "url('" + IMG_DATA_URL + "')";
   initNav();
+  // Restore sidebar collapse state
+  try{if(localStorage.getItem('sb-collapsed')==='1') document.getElementById('sidebar')?.classList.add('collapsed');}catch(e){}
+  // Init FAB for dashboard (no action)
+  const fab=document.getElementById('mobile-fab');
+  if(fab) fab.style.display='none';
   updateFirebaseUI();
   if (FIREBASE_READY) {
     /* Sign in anonymously — silent, invisible to users, required by security rules */
@@ -770,12 +936,17 @@ function navigate(id,el) {
   document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
   document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
   if(el) el.classList.add('active');
+  else document.querySelector('.nav-item[data-page="'+id+'"]')?.classList.add('active');
   document.getElementById('page-'+id)?.classList.add('active');
   const cfg=pageCfg[id]||{};
   document.getElementById('topbar-label').textContent=cfg.label||id;
   document.getElementById('topbar-action-btn').dataset.action=cfg.action||'';
   document.getElementById('topbar-action-btn').textContent=actionLabels[cfg.action]||'+ Add';
   document.getElementById('topbar-action-btn').style.display=cfg.action?'':'none';
+  // sync bottom nav + FAB
+  document.querySelectorAll('.bn-item[data-page]').forEach(b=>b.classList.toggle('active',b.dataset.page===id));
+  const fab=document.getElementById('mobile-fab');
+  if(fab){fab.style.display=(cfg.action&&window.innerWidth<=768)?'flex':'none';fab.dataset.action=cfg.action||'';}
 }
 function toggleSidebar() {
   const sb=document.getElementById('sidebar');
@@ -789,8 +960,35 @@ function closeSidebar() {
   document.getElementById('sidebar-overlay')?.classList.remove('open');
   document.body.style.overflow='';
 }
-function topbarAction() {
-  const a=document.getElementById('topbar-action-btn').dataset.action;
+function toggleSidebarCollapse() {
+  const sb=document.getElementById('sidebar');
+  sb.classList.toggle('collapsed');
+  try{localStorage.setItem('sb-collapsed',sb.classList.contains('collapsed')?'1':'0');}catch(e){}
+}
+function syncBottomNav(page) {
+  document.querySelectorAll('.bn-item[data-page]').forEach(b=>b.classList.toggle('active',b.dataset.page===page));
+  // also sync sidebar nav
+  document.querySelectorAll('.nav-item[data-page]').forEach(n=>n.classList.toggle('active',n.dataset.page===page));
+  // update FAB visibility
+  const cfg=pageCfg[page]||{};
+  const fab=document.getElementById('mobile-fab');
+  if(fab) fab.style.display=cfg.action?'flex':'none';
+  fab && (fab.dataset.action=cfg.action||'');
+}
+function fabAction() {
+  const a=document.getElementById('mobile-fab').dataset.action;
+  if(!a) return;
+  runAction(a);
+}
+function openMoreDrawer() {
+  document.getElementById('more-drawer').classList.add('open');
+  document.getElementById('more-overlay').classList.add('open');
+}
+function closeMoreDrawer() {
+  document.getElementById('more-drawer').classList.remove('open');
+  document.getElementById('more-overlay').classList.remove('open');
+}
+function runAction(a) {
   if(a==='photos') document.querySelector('#photo-drop-zone input')?.click();
   else if(a==='videos') document.getElementById('vid-url-input')?.focus();
   else if(a==='submittal') openFormModal('submittal');
@@ -799,6 +997,10 @@ function topbarAction() {
   else if(a==='meeting') openFormModal('meeting');
   else if(a==='docs') addCustomDocSection();
 }
+function topbarAction() {
+  runAction(document.getElementById('topbar-action-btn').dataset.action);
+}
+topbarAction._run=runAction;
 
 /* ── AHJ ── */
 async function saveAHJ() {
@@ -895,50 +1097,71 @@ function fmtBytes(b){return b<1048576?(b/1024).toFixed(1)+'KB':(b/1048576).toFix
 async function compressImage(file,maxPx=1800,quality=0.78){
   return new Promise(resolve=>{
     const img=new Image();
-    const reader=new FileReader();
-    reader.onload=e=>{
-      img.onload=()=>{
-        let w=img.width,h=img.height;
-        if(w>maxPx||h>maxPx){
-          if(w>h){h=Math.round(h*maxPx/w);w=maxPx;}
-          else{w=Math.round(w*maxPx/h);h=maxPx;}
-        }
-        const canvas=document.createElement('canvas');
-        canvas.width=w;canvas.height=h;
-        canvas.getContext('2d').drawImage(img,0,0,w,h);
-        canvas.toBlob(blob=>resolve(blob||file),'image/jpeg',quality);
-      };
-      img.src=e.target.result;
+    const objUrl=URL.createObjectURL(file); // no base64 overhead
+    img.onload=()=>{
+      URL.revokeObjectURL(objUrl);
+      let w=img.width,h=img.height;
+      if(w>maxPx||h>maxPx){
+        if(w>h){h=Math.round(h*maxPx/w);w=maxPx;}
+        else{w=Math.round(w*maxPx/h);h=maxPx;}
+      }
+      const canvas=document.createElement('canvas');
+      canvas.width=w;canvas.height=h;
+      canvas.getContext('2d').drawImage(img,0,0,w,h);
+      canvas.toBlob(blob=>resolve(blob||file),'image/jpeg',quality);
     };
-    reader.readAsDataURL(file);
+    img.onerror=()=>{URL.revokeObjectURL(objUrl);resolve(file);};
+    img.src=objUrl;
   });
 }
 
 async function handleFiles(e,type) {
   const files=Array.from(e.target.files);
+  if(!files.length) return;
   const grid=document.getElementById(type+'-grid');
   grid.querySelector('.empty-state')?.remove();
   const bar=document.getElementById(type+'-upload-bar');
   const prog=document.getElementById(type+'-upload-prog');
   if(bar) bar.classList.add('active');
-  for(const f of files) {
+
+  // Render all cards immediately so user sees placeholders at once
+  const cards=files.map(f=>{
     const localUrl=URL.createObjectURL(f);
     const card=makeFileCard(f,localUrl,type,true);
     grid.appendChild(card);
-    try {
-      /* Compress images before upload — keeps Storage lean */
-      const uploadBlob=f.type.startsWith('image/')?await compressImage(f):f;
-      const uploadFile=f.type.startsWith('image/')?new File([uploadBlob],f.name,{type:'image/jpeg'}):f;
-      const url=await uploadToStorage(type,uploadFile,pct=>{if(prog)prog.style.width=pct+'%';});
-      store[type].push({name:f.name,size:uploadBlob.size,url,type:'image/jpeg'});
-      card.querySelector('.file-uploading')?.remove();
-      const img=card.querySelector('img');
-      if(img) img.src=url;
-      card.querySelector('.file-thumb').onclick=()=>openModal(url,'image/jpeg');
-      if(FIREBASE_READY) await db.collection(type).add({name:f.name,size:uploadBlob.size,url,mimeType:'image/jpeg',_ts:firebase.firestore.FieldValue.serverTimestamp()});
-      logActivity('Uploaded '+f.name+' (compressed)');
-    } catch(err){console.error(err);}
-  }
+    return {f,localUrl,card};
+  });
+
+  // Upload all files in parallel
+  let done=0;
+  await Promise.all(cards.map(async({f,localUrl,card})=>{
+    try{
+      const isImg=f.type.startsWith('image/');
+      const uploadBlob=isImg?await compressImage(f):f;
+      const uploadFile=isImg?new File([uploadBlob],f.name,{type:'image/jpeg'}):uploadBlob;
+      // Per-card progress ring
+      const progEl=card.querySelector('.file-uploading');
+      const url=await uploadToStorage(type,uploadFile,pct=>{
+        if(progEl) progEl.textContent=Math.round(pct)+'%';
+        // also update global bar as average
+        done=Math.min(done,pct/100);
+        if(prog) prog.style.width=(done/files.length*100)+'%';
+      });
+      store[type].push({name:f.name,size:uploadBlob.size,url,type:isImg?'image/jpeg':f.type});
+      if(progEl) progEl.remove();
+      const imgEl=card.querySelector('img');
+      if(imgEl) imgEl.src=url; // swap to final CDN URL
+      card.querySelector('.file-thumb').onclick=()=>openModal(url,isImg?'image/jpeg':f.type);
+      if(FIREBASE_READY) db.collection(type).add({name:f.name,size:uploadBlob.size,url,mimeType:isImg?'image/jpeg':f.type,_ts:firebase.firestore.FieldValue.serverTimestamp()});
+      logActivity('Uploaded '+f.name+(isImg?' (compressed)':''));
+    }catch(err){
+      console.error('Upload error',f.name,err);
+      card.querySelector('.file-uploading').textContent='Failed';
+    }
+    done++;
+    if(prog) prog.style.width=(done/files.length*100)+'%';
+  }));
+
   if(bar) bar.classList.remove('active');
   if(prog) prog.style.width='0%';
   updateStats(); e.target.value='';
