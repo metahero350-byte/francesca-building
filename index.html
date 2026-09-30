@@ -40,6 +40,24 @@ body{font-family:'Segoe UI',system-ui,-apple-system,sans-serif;background:var(--
 .enter-btn{display:inline-block;padding:12px 44px;border:1px solid rgba(201,169,110,0.6);background:transparent;color:var(--accent);font-size:11px;letter-spacing:4px;text-transform:uppercase;cursor:pointer;transition:all 0.35s;}
 .enter-btn:hover{background:var(--accent);color:var(--navy2);}
 
+/* ── LOGIN MODAL ── */
+#login-modal{display:none;position:fixed;inset:0;z-index:1100;background:rgba(6,21,41,0.94);align-items:center;justify-content:center;}
+#login-modal.open{display:flex;}
+.login-box{background:var(--white);width:400px;max-width:92vw;padding:40px 36px;box-shadow:0 24px 72px rgba(0,0,0,0.5);}
+.login-logo{font-size:10px;letter-spacing:3px;text-transform:uppercase;color:var(--accent);font-weight:700;margin-bottom:6px;}
+.login-title{font-size:22px;font-weight:300;color:var(--navy2);letter-spacing:1px;margin-bottom:28px;}
+.login-field{margin-bottom:16px;}
+.login-field label{display:block;font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--gray3);font-weight:600;margin-bottom:6px;}
+.login-field input{width:100%;padding:10px 12px;border:1px solid var(--gray2);font-size:14px;font-family:inherit;color:var(--black);transition:border-color 0.2s;}
+.login-field input:focus{outline:none;border-color:var(--navy);}
+.login-btn{width:100%;padding:12px;background:var(--navy);color:var(--white);border:none;font-size:11px;letter-spacing:3px;text-transform:uppercase;cursor:pointer;margin-top:8px;transition:background 0.2s;}
+.login-btn:hover:not(:disabled){background:var(--navy3);}
+.login-btn:disabled{opacity:0.6;cursor:default;}
+.login-err{font-size:12px;color:var(--red);margin-top:10px;text-align:center;min-height:18px;}
+.signout-btn{width:100%;background:none;border:none;border-top:1px solid rgba(255,255,255,0.06);color:rgba(255,255,255,0.4);cursor:pointer;padding:8px 18px;font-size:10px;letter-spacing:1px;text-align:left;display:flex;align-items:center;gap:6px;transition:color 0.2s;}
+.signout-btn:hover{color:var(--accent);}
+.user-email-label{font-size:10px;color:rgba(255,255,255,0.5);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+
 /* ── APP ── */
 #app{display:none;height:100vh;overflow:hidden;}
 #app.visible{display:flex;}
@@ -320,6 +338,24 @@ body{font-family:'Segoe UI',system-ui,-apple-system,sans-serif;background:var(--
 </head>
 <body>
 
+<!-- LOGIN MODAL -->
+<div id="login-modal">
+  <div class="login-box">
+    <div class="login-logo">Francesca's Building</div>
+    <div class="login-title">Partner Access</div>
+    <div class="login-field">
+      <label>Email</label>
+      <input type="email" id="login-email" placeholder="your@email.com" autocomplete="email" onkeydown="if(event.key==='Enter')doLogin()"/>
+    </div>
+    <div class="login-field">
+      <label>Password</label>
+      <input type="password" id="login-pass" placeholder="••••••••" autocomplete="current-password" onkeydown="if(event.key==='Enter')doLogin()"/>
+    </div>
+    <button class="login-btn" id="login-btn" onclick="doLogin()">Sign In</button>
+    <div class="login-err" id="login-err"></div>
+  </div>
+</div>
+
 <!-- FIREBASE CONFIG NOTICE -->
 <div id="fb-banner">
   &#x26A0; Firebase not configured — data is session-only.
@@ -392,7 +428,12 @@ body{font-family:'Segoe UI',system-ui,-apple-system,sans-serif;background:var(--
     <div class="sidebar-footer">
       <div class="sidebar-footer-meta">Francesca's Building &copy; 2026
         <div class="fb-indicator" id="fb-indicator"><div class="fb-dot" id="fb-dot"></div><span id="fb-status-text">No Firebase</span></div>
+        <div class="user-email-label" id="user-email-label" style="margin-top:4px;display:none;"></div>
       </div>
+      <button class="signout-btn" id="signout-btn" style="display:none;" onclick="doSignOut()">
+        <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+        Sign Out
+      </button>
       <button class="sidebar-collapse-btn" onclick="toggleSidebarCollapse()" title="Collapse">
         <span class="collapse-label">Collapse</span>
         <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>
@@ -827,29 +868,32 @@ try {
   firebase.initializeApp(firebaseConfig);
   db = firebase.firestore();
   storage = firebase.storage();
-  // Sign in anonymously — works with rules: allow read, write: if request.auth != null
-  firebase.auth().signInAnonymously()
-    .then(firebaseOnline)
-    .catch(err => {
-      // Auth failed — try open-rules fallback (Firestore rules: if true)
-      console.warn('Auth failed, trying unauthenticated:', err.code);
-      FIREBASE_READY = true;
+  // Watch auth state — email/password login required
+  firebase.auth().onAuthStateChanged(user => {
+    if (user) {
+      // Signed in — show user email in sidebar
+      const lbl = document.getElementById('user-email-label');
+      if(lbl){ lbl.textContent = user.email || 'Signed in'; lbl.style.display=''; }
+      const sob = document.getElementById('signout-btn');
+      if(sob) sob.style.display='';
       firebaseOnline();
-    });
+    } else {
+      // Not signed in
+      const mfb = document.getElementById('module-firebase');
+      if(mfb){ mfb.className='pill pill-pending'; mfb.textContent='Sign In Required'; }
+    }
+  });
 } catch(e) { console.warn('Firebase init error:', e); }
 
 document.addEventListener('DOMContentLoaded', function() {
   document.getElementById('building-photo').style.backgroundImage = "url('" + IMG_DATA_URL + "')";
   initNav();
   seedTeam();
-  // Firebase listeners start after auth resolves (async above)
-  // Show connecting state while auth is in flight
-  if (!FIREBASE_READY) {
-    const mfb = document.getElementById('module-firebase');
-    if(mfb){ mfb.className='pill pill-pending'; mfb.textContent='Connecting…'; }
-  }
 });
-setTimeout(enterSite, 5500);
+setTimeout(() => {
+  // Auto-advance cover after 5.5s — but only if already authenticated (returning user)
+  if (firebase.auth().currentUser) enterSite();
+}, 5500);
 
 /* ── FIREBASE HELPERS ── */
 async function uploadToStorage(path, file, onProgress) {
@@ -969,12 +1013,61 @@ function initFirebaseListeners() {
   });
 }
 
-/* ── COVER ── */
+/* ── COVER / AUTH ── */
 function enterSite() {
   const cover = document.getElementById('cover');
   if (cover.style.display === 'none') return;
+  // If already signed in, go straight in
+  if (firebase.auth().currentUser) { showApp(); return; }
+  // Otherwise prompt login
+  document.getElementById('login-modal').classList.add('open');
+  setTimeout(() => document.getElementById('login-email').focus(), 80);
+}
+
+function showApp() {
+  document.getElementById('login-modal').classList.remove('open');
+  const cover = document.getElementById('cover');
   cover.classList.add('fade-out');
   setTimeout(() => { cover.style.display='none'; document.getElementById('app').classList.add('visible'); }, 1200);
+}
+
+async function doLogin() {
+  const email = document.getElementById('login-email').value.trim();
+  const pass  = document.getElementById('login-pass').value;
+  const errEl = document.getElementById('login-err');
+  const btn   = document.getElementById('login-btn');
+  errEl.textContent = '';
+  if (!email || !pass) { errEl.textContent = 'Enter your email and password.'; return; }
+  btn.textContent = 'Signing in…'; btn.disabled = true;
+  try {
+    await firebase.auth().signInWithEmailAndPassword(email, pass);
+    showApp();
+  } catch(e) {
+    const msg = (e.code === 'auth/wrong-password' || e.code === 'auth/user-not-found' || e.code === 'auth/invalid-credential')
+      ? 'Invalid email or password.'
+      : e.code === 'auth/too-many-requests'
+      ? 'Too many attempts — try again later.'
+      : e.message;
+    errEl.textContent = msg;
+    btn.textContent = 'Sign In'; btn.disabled = false;
+  }
+}
+
+function doSignOut() {
+  if (!confirm('Sign out of Francesca\'s Building?')) return;
+  firebase.auth().signOut().then(() => {
+    // Reset app state
+    document.getElementById('app').classList.remove('visible');
+    FIREBASE_READY = false;
+    const cover = document.getElementById('cover');
+    cover.style.display = '';
+    cover.classList.remove('fade-out');
+    const lbl = document.getElementById('user-email-label');
+    if(lbl){ lbl.textContent=''; lbl.style.display='none'; }
+    document.getElementById('signout-btn').style.display = 'none';
+    const mfb = document.getElementById('module-firebase');
+    if(mfb){ mfb.className='pill pill-pending'; mfb.textContent='Sign In Required'; }
+  });
 }
 
 /* ── NAVIGATION ── */
