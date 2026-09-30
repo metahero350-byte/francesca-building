@@ -7,6 +7,7 @@
 
 <!-- Firebase SDK (v10 compat) -->
 <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-storage-compat.js"></script>
 
@@ -797,12 +798,13 @@ body{font-family:'Segoe UI',system-ui,-apple-system,sans-serif;background:var(--
    Push index.html to GitHub → Settings > Pages > Deploy
 ════════════════════════════════════════════════════ */
 const firebaseConfig = {
-  apiKey:            "YOUR_API_KEY",
-  authDomain:        "YOUR_PROJECT.firebaseapp.com",
-  projectId:         "YOUR_PROJECT_ID",
-  storageBucket:     "YOUR_PROJECT.appspot.com",
-  messagingSenderId: "YOUR_SENDER_ID",
-  appId:             "YOUR_APP_ID"
+  apiKey:            "AIzaSyCFa1vlj8GCEMk5zt6KXxsnmTVN86Rp6Ac",
+  authDomain:        "francesca-building.firebaseapp.com",
+  projectId:         "francesca-building",
+  storageBucket:     "francesca-building.firebasestorage.app",
+  messagingSenderId: "256117213955",
+  appId:             "1:256117213955:web:149d2e5370090d3bd6f736",
+  measurementId:     "G-CWQ7DV218K"
 };
 
 /* ── INIT ── */
@@ -810,29 +812,41 @@ const IMG_DATA_URL = 'data:image/jpeg;base64,/9j/4AAQSkZJRgABAQEASABIAAD/2wBDAAM
 let db, storage, FIREBASE_READY = false;
 let _editingMeetingId = null;
 
+function firebaseOnline() {
+  FIREBASE_READY = true;
+  document.getElementById('fb-dot')?.classList.add('live');
+  const fbt = document.getElementById('fb-status-text');
+  if(fbt) fbt.textContent = 'Firebase Live';
+  const mfb = document.getElementById('module-firebase');
+  if(mfb){ mfb.className='pill pill-active'; mfb.textContent='Connected'; }
+  document.getElementById('fb-banner').style.display = 'none';
+  initFirebaseListeners();
+}
+
 try {
-  if (firebaseConfig.apiKey !== 'YOUR_API_KEY') {
-    firebase.initializeApp(firebaseConfig);
-    db = firebase.firestore();
-    storage = firebase.storage();
-    FIREBASE_READY = true;
-  }
-} catch(e) { console.warn('Firebase:', e); }
+  firebase.initializeApp(firebaseConfig);
+  db = firebase.firestore();
+  storage = firebase.storage();
+  // Sign in anonymously — works with rules: allow read, write: if request.auth != null
+  firebase.auth().signInAnonymously()
+    .then(firebaseOnline)
+    .catch(err => {
+      // Auth failed — try open-rules fallback (Firestore rules: if true)
+      console.warn('Auth failed, trying unauthenticated:', err.code);
+      FIREBASE_READY = true;
+      firebaseOnline();
+    });
+} catch(e) { console.warn('Firebase init error:', e); }
 
 document.addEventListener('DOMContentLoaded', function() {
   document.getElementById('building-photo').style.backgroundImage = "url('" + IMG_DATA_URL + "')";
   initNav();
   seedTeam();
-  if (FIREBASE_READY) {
-    document.getElementById('fb-dot').classList.add('live');
-    document.getElementById('fb-status-text').textContent = 'Firebase Live';
-    document.getElementById('module-firebase').className = 'pill pill-active';
-    document.getElementById('module-firebase').textContent = 'Connected';
-    initFirebaseListeners();
-  } else {
-    document.getElementById('fb-banner').style.display = 'block';
-    document.getElementById('module-firebase').className = 'pill pill-pending';
-    document.getElementById('module-firebase').textContent = 'Config Needed';
+  // Firebase listeners start after auth resolves (async above)
+  // Show connecting state while auth is in flight
+  if (!FIREBASE_READY) {
+    const mfb = document.getElementById('module-firebase');
+    if(mfb){ mfb.className='pill pill-pending'; mfb.textContent='Connecting…'; }
   }
 });
 setTimeout(enterSite, 5500);
