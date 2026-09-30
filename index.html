@@ -229,6 +229,8 @@ body{font-family:'Segoe UI',system-ui,-apple-system,sans-serif;background:var(--
 .rfi-body{display:none;padding:0 16px 16px;border-top:1px solid var(--gray2);}
 .rfi-body.open{display:block;}
 .rfi-desc{font-size:13px;color:#444;margin:12px 0 0;line-height:1.6;}
+.comm-detail{font-size:12px;color:var(--gray3);margin-bottom:4px;line-height:1.5;}
+.comm-detail strong{color:var(--navy);}
 .rfi-attach-row{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px;}
 .attach-chip{display:inline-flex;align-items:center;gap:6px;padding:5px 10px;background:var(--gray);border:1px solid var(--gray2);font-size:11px;color:var(--navy);cursor:pointer;}
 .attach-chip:hover{border-color:var(--navy);}
@@ -379,7 +381,7 @@ body{font-family:'Segoe UI',system-ui,-apple-system,sans-serif;background:var(--
     </div>
     <div class="nav-item" data-page="meetings" data-label="Meetings">
       <svg class="nav-icon" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
-      Meeting Notes
+      Comms Log
     </div>
     <div class="nav-item locked">
       <svg class="nav-icon" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
@@ -444,7 +446,7 @@ body{font-family:'Segoe UI',system-ui,-apple-system,sans-serif;background:var(--
             <div class="stat-value" id="stat-team">0</div>
           </div>
           <div class="stat-card">
-            <div class="stat-label">Meetings</div>
+            <div class="stat-label">Comms Logged</div>
             <div class="stat-value" id="stat-meetings">0</div>
           </div>
         </div>
@@ -492,7 +494,7 @@ body{font-family:'Segoe UI',system-ui,-apple-system,sans-serif;background:var(--
                 <tr><td>Submittals</td><td><span class="pill pill-active">Live</span></td></tr>
                 <tr><td>RFIs</td><td><span class="pill pill-active">Live</span></td></tr>
                 <tr><td>Schedule</td><td><span class="pill pill-active">Live</span></td></tr>
-                <tr><td>Meeting Notes</td><td><span class="pill pill-active">Live</span></td></tr>
+                <tr><td>Communications Log</td><td><span class="pill pill-active">Live</span></td></tr>
                 <tr><td>Firebase Storage</td><td><span class="pill" id="module-firebase">Pending Config</span></td></tr>
               </table>
             </div>
@@ -710,11 +712,15 @@ body{font-family:'Segoe UI',system-ui,-apple-system,sans-serif;background:var(--
       <!-- ═══ MEETING NOTES ═══ -->
       <div class="page" id="page-meetings">
         <div class="page-header">
-          <div class="page-title">Meeting Notes</div>
-          <div class="page-subtitle">Log meetings, attach PDF minutes, track decisions</div>
+          <div class="page-title">Communications Log</div>
+          <div class="page-subtitle">Log meetings, phone calls, and emails — searchable, editable, with PDF attachments</div>
         </div>
-        <div class="toolbar"><button class="btn-primary" onclick="openFormModal('meeting')">+ New Meeting</button></div>
-        <div id="meetings-list"><div class="empty-state" id="meetings-empty">No meetings logged yet</div></div>
+        <div class="toolbar" style="display:flex;gap:10px;flex-wrap:wrap;">
+          <button class="btn-primary" onclick="openCommLog('meeting')">+ Meeting</button>
+          <button class="btn-primary" style="background:var(--navy3);" onclick="openCommLog('call')">+ Phone Call</button>
+          <button class="btn-primary" style="background:var(--navy3);" onclick="openCommLog('email')">+ Email</button>
+        </div>
+        <div id="meetings-list"><div class="empty-state" id="meetings-empty">No communications logged yet</div></div>
       </div>
 
     </div><!-- /content -->
@@ -922,7 +928,7 @@ function initFirebaseListeners() {
   db.collection('meetings').orderBy('_ts','desc').onSnapshot(snap => {
     const list = document.getElementById('meetings-list');
     list.innerHTML = '';
-    if(snap.empty){ list.innerHTML='<div class="empty-state" id="meetings-empty">No meetings logged yet</div>'; return; }
+    if(snap.empty){ list.innerHTML='<div class="empty-state" id="meetings-empty">No communications logged yet</div>'; return; }
     snap.forEach(doc => renderMeetingCard({...doc.data(), fsId:doc.id}));
     document.getElementById('stat-meetings').textContent = snap.size;
   });
@@ -966,9 +972,9 @@ const pageCfg = {
   submittals: {label:'Submittals',       action:'submittal'},
   rfis:       {label:'RFIs',             action:'rfi'},
   schedule:   {label:'Schedule',         action:'schedule'},
-  meetings:   {label:'Meeting Notes',    action:'meeting'},
+  meetings:   {label:'Communications Log', action:'meeting'},
 };
-const actionLabels = {docs:'+ Upload',photos:'+ Upload',submittal:'+ New Submittal',rfi:'+ New RFI',schedule:'+ Add Phase',meeting:'+ New Meeting'};
+const actionLabels = {docs:'+ Upload',photos:'+ Upload',submittal:'+ New Submittal',rfi:'+ New RFI',schedule:'+ Add Phase',meeting:'+ Log Communication'};
 
 function initNav() {
   document.querySelectorAll('.nav-item[data-page]').forEach(el => {
@@ -1006,12 +1012,14 @@ function openMoreDrawer(){document.getElementById('more-drawer').classList.add('
 function closeMoreDrawer(){document.getElementById('more-drawer').classList.remove('open');document.getElementById('more-overlay').classList.remove('open');}
 function fabAction(){const a=document.getElementById('mobile-fab').dataset.action;if(a) runAction(a);}
 
+function openCommLog(kind) { window._commType = kind||'meeting'; openFormModal('meeting'); }
+
 function runAction(a){
   if(a==='photos') document.querySelector('#photo-drop-zone input')?.click();
   else if(a==='submittal') openFormModal('submittal');
   else if(a==='rfi') openFormModal('rfi');
   else if(a==='schedule') addScheduleRow();
-  else if(a==='meeting') openFormModal('meeting');
+  else if(a==='meeting') openCommLog('meeting');
   else if(a==='docs') addCustomDocSection();
 }
 function topbarAction(){ runAction(document.getElementById('topbar-action-btn').dataset.action); }
@@ -1324,23 +1332,56 @@ function openFormModal(type) {
       </div>
       <div class="form-actions"><button class="btn-cancel" onclick="closeFormModal()">Cancel</button><button class="btn-save" onclick="saveTeamMember()">Add Member</button></div>`;
   } else if (type==='meeting') {
+    // default commType is 'meeting' unless set by openCommLog
+    const ct = window._commType || 'meeting';
+    const isCall = ct==='call', isEmail = ct==='email';
+    const typeLabel = isCall ? 'Phone Call' : isEmail ? 'Email' : 'Meeting';
+    const icon = isCall ? '📞' : isEmail ? '✉️' : '📋';
+    document.getElementById('form-modal-title').textContent = icon+' Log '+typeLabel;
     body.innerHTML=`
+      <input type="hidden" id="fm-comm-kind" value="${ct}"/>
       <div class="form-row-2">
-        <div class="form-group"><label class="form-label">Meeting Date</label><input class="form-control" type="date" id="fm-mtg-date"/></div>
-        <div class="form-group"><label class="form-label">Type</label>
-          <select class="form-control" id="fm-mtg-type"><option>Job Site Meeting</option><option>Owner Meeting</option><option>Design Review</option><option>Safety Meeting</option><option>Coordination Meeting</option><option>Pre-Construction</option><option>Other</option></select>
-        </div>
+        <div class="form-group"><label class="form-label">Date</label><input class="form-control" type="date" id="fm-mtg-date"/></div>
+        ${isCall||isEmail ? `
+        <div class="form-group"><label class="form-label">Direction</label>
+          <select class="form-control" id="fm-comm-dir">
+            <option value="Outbound">Outbound</option>
+            <option value="Inbound">Inbound</option>
+          </select>
+        </div>` : `
+        <div class="form-group"><label class="form-label">Meeting Type</label>
+          <select class="form-control" id="fm-mtg-type">
+            <option>Job Site Meeting</option><option>Owner Meeting</option><option>Design Review</option>
+            <option>Safety Meeting</option><option>Coordination Meeting</option><option>Pre-Construction</option><option>Other</option>
+          </select>
+        </div>`}
       </div>
-      <div class="form-group"><label class="form-label">Subject / Title</label><input class="form-control" id="fm-mtg-title" placeholder="e.g. Electrical rough-in coordination"/></div>
-      <div class="form-group"><label class="form-label">Attendees</label><input class="form-control" id="fm-mtg-attendees" placeholder="e.g. Alfaro, Les Baird, Aaron"/></div>
-      <div class="form-group"><label class="form-label">Summary Notes</label><textarea class="form-control" id="fm-mtg-notes" rows="4" placeholder="Key decisions, action items, follow-ups..."></textarea></div>
-      <div class="form-actions"><button class="btn-cancel" onclick="closeFormModal()">Cancel</button><button class="btn-save" onclick="saveMeeting()">Create Entry</button></div>`;
+      ${isCall ? `
+      <div class="form-row-2">
+        <div class="form-group"><label class="form-label">Contact Name</label><input class="form-control" id="fm-comm-contact" placeholder="Who you spoke with"/></div>
+        <div class="form-group"><label class="form-label">Company / Role</label><input class="form-control" id="fm-comm-org" placeholder="e.g. City Inspector, Electrician"/></div>
+      </div>
+      <div class="form-group"><label class="form-label">Phone Number</label><input class="form-control" id="fm-comm-phone" type="tel" placeholder="(760) 000-0000"/></div>` : isEmail ? `
+      <div class="form-row-2">
+        <div class="form-group"><label class="form-label">From</label><input class="form-control" id="fm-comm-from" placeholder="Sender name or email"/></div>
+        <div class="form-group"><label class="form-label">To</label><input class="form-control" id="fm-comm-to" placeholder="Recipient(s)"/></div>
+      </div>` : `
+      <div class="form-group"><label class="form-label">Attendees</label><input class="form-control" id="fm-mtg-attendees" placeholder="e.g. Alfaro, Les Baird, Aaron"/></div>`}
+      <div class="form-group"><label class="form-label">Subject / Title *</label><input class="form-control" id="fm-mtg-title" placeholder="${isCall?'What was discussed':isEmail?'Email subject':'Meeting subject'}"/></div>
+      <div class="form-group"><label class="form-label">${isEmail?'Email Body / Summary':'Notes'}</label><textarea class="form-control" id="fm-mtg-notes" rows="${isEmail?5:4}" placeholder="${isCall?'Key points, decisions, follow-up items...':isEmail?'Paste email body or summarize...':'Key decisions, action items, follow-ups...'}"></textarea></div>
+      ${isEmail?`<div class="form-group"><label class="form-label">CC / BCC</label><input class="form-control" id="fm-comm-cc" placeholder="Others copied (optional)"/></div>`:''}
+      <div class="form-group"><label class="form-label">Follow-Up Required</label>
+        <select class="form-control" id="fm-comm-followup">
+          <option value="">None</option><option value="Pending">Pending</option><option value="Urgent">Urgent</option><option value="Done">Done</option>
+        </select>
+      </div>
+      <div class="form-actions"><button class="btn-cancel" onclick="closeFormModal()">Cancel</button><button class="btn-save" onclick="saveMeeting()">${_editingMeetingId?'Update':'Save'} ${typeLabel}</button></div>`;
     setTimeout(()=>{ const d=document.getElementById('fm-mtg-date'); if(d) d.valueAsDate=new Date(); },50);
   }
   document.getElementById('form-modal').classList.add('open');
 }
 
-function closeFormModal() { document.getElementById('form-modal').classList.remove('open'); _editingMeetingId = null; }
+function closeFormModal() { document.getElementById('form-modal').classList.remove('open'); _editingMeetingId = null; window._commType = null; }
 
 function requireField(el,msg){
   if(!el) return false;
@@ -1673,41 +1714,46 @@ async function pfDelete(btn, id) {
 ══════════════════════════════════ */
 function editMeeting(id) {
   _editingMeetingId = id;
-  // grab current card data from DOM
-  const title = document.getElementById('mtg-title-'+id)?.textContent || '';
-  const meta = document.getElementById('mtg-meta-'+id)?.textContent || '';
-  // re-open form modal then populate
+  // read stored data from data attributes on the card
+  const card = document.getElementById('mtg-card-'+id);
+  const storedKind = card?.dataset.commKind || 'meeting';
+  window._commType = storedKind;
   openFormModal('meeting');
   setTimeout(() => {
+    // title
     const titleEl = document.getElementById('fm-mtg-title');
-    if(titleEl) titleEl.value = title;
-    // try to extract date from meta (format: "Sep 30, 2026 · Type")
-    // better: we store in data-* — use a simpler approach: card notes div
+    if(titleEl) titleEl.value = document.getElementById('mtg-title-'+id)?.textContent || '';
+    // notes
     const notesEl = document.getElementById('fm-mtg-notes');
-    const attendeesEl = document.getElementById('fm-mtg-attendees');
-    if(notesEl) {
-      // get raw notes from the DOM (innerText reverses <br> back to newlines)
-      notesEl.value = (document.getElementById('mtg-notes-'+id)?.innerText || '').trim();
-    }
-    if(attendeesEl) {
-      const raw = document.getElementById('mtg-attendees-'+id)?.innerText || '';
-      attendeesEl.value = raw.replace(/^Attendees:\s*/i,'').trim();
-    }
-    // change button label
-    const saveBtn = document.querySelector('#form-modal .btn-save');
-    if(saveBtn) saveBtn.textContent = 'Update Meeting';
+    if(notesEl) notesEl.value = (document.getElementById('mtg-notes-'+id)?.innerText || '').trim();
+    // restore saved raw values from card data attributes
+    ['date','direction','type','contact','org','phone','from','to','cc','attendees','followup'].forEach(k => {
+      const val = card?.dataset['comm_'+k] || '';
+      const el = document.getElementById('fm-mtg-'+k) || document.getElementById('fm-comm-'+k);
+      if(el && val) el.value = val;
+    });
   }, 80);
 }
 
 async function saveMeeting() {
-  if (!requireField(document.getElementById('fm-mtg-title'),'Meeting subject is required')) return;
+  if (!requireField(document.getElementById('fm-mtg-title'),'Subject is required')) return;
   const title = document.getElementById('fm-mtg-title').value.trim();
+  const kind = document.getElementById('fm-comm-kind')?.value || 'meeting';
   const data = {
+    kind,
     title,
-    date:      document.getElementById('fm-mtg-date').value,
-    type:      document.getElementById('fm-mtg-type').value,
-    attendees: document.getElementById('fm-mtg-attendees').value.trim(),
-    notes:     document.getElementById('fm-mtg-notes').value.trim(),
+    date:      document.getElementById('fm-mtg-date')?.value || '',
+    type:      document.getElementById('fm-mtg-type')?.value || kind,
+    direction: document.getElementById('fm-comm-dir')?.value || '',
+    contact:   document.getElementById('fm-comm-contact')?.value.trim() || '',
+    org:       document.getElementById('fm-comm-org')?.value.trim() || '',
+    phone:     document.getElementById('fm-comm-phone')?.value.trim() || '',
+    from:      document.getElementById('fm-comm-from')?.value.trim() || '',
+    to:        document.getElementById('fm-comm-to')?.value.trim() || '',
+    cc:        document.getElementById('fm-comm-cc')?.value.trim() || '',
+    attendees: document.getElementById('fm-mtg-attendees')?.value.trim() || '',
+    notes:     document.getElementById('fm-mtg-notes')?.value.trim() || '',
+    followup:  document.getElementById('fm-comm-followup')?.value || '',
   };
   closeFormModal();
 
@@ -1728,7 +1774,11 @@ async function saveMeeting() {
     }
     if(notesEl) notesEl.innerHTML = data.notes.replace(/\n/g,'<br>');
     if(attendeesEl) attendeesEl.innerHTML = data.attendees ? '<strong>Attendees:</strong> '+data.attendees : '';
-    logActivity('Meeting updated: '+title);
+    // update stored data attrs for future edits
+    const card = document.getElementById('mtg-card-'+id);
+    if(card) { ['date','direction','type','contact','org','phone','from','to','cc','attendees','followup'].forEach(k=>{if(data[k])card.dataset['comm_'+k]=data[k];}); }
+    const kindLabel = data.kind==='call'?'Call':data.kind==='email'?'Email':'Meeting';
+    logActivity(kindLabel+' updated: '+title);
     return;
   }
 
@@ -1741,32 +1791,63 @@ async function saveMeeting() {
     renderMeetingCard({...data, fsId:String(Date.now()), pdfUrl:'', pdfName:''});
     document.getElementById('meetings-empty')?.remove();
   }
-  logActivity('Meeting logged: '+title);
+  const _kl = data.kind==='call'?'Call':data.kind==='email'?'Email':'Meeting';
+  logActivity(_kl+' logged: '+title);
 }
 
 function renderMeetingCard(m) {
   const id = m.fsId || String(Date.now());
   const list = document.getElementById('meetings-list');
   list.querySelector('#meetings-empty')?.remove();
-  // remove stale card if re-rendering from snapshot
   document.getElementById('mtg-card-'+id)?.remove();
   const div = document.createElement('div');
   div.className = 'rfi-card'; div.id = 'mtg-card-'+id;
+  // store raw values for edit restore
+  div.dataset.commKind = kind;
+  ['date','direction','type','contact','org','phone','from','to','cc','attendees','followup'].forEach(k => { if(m[k]) div.dataset['comm_'+k]=m[k]; });
+
+  const kind = m.kind || 'meeting';
+  const icon = kind==='call' ? '📞' : kind==='email' ? '✉️' : '📋';
+  const accentColor = kind==='call' ? 'var(--green)' : kind==='email' ? 'var(--accent)' : 'var(--navy)';
   const dateStr = m.date ? new Date(m.date+'T12:00:00').toLocaleDateString([],{month:'short',day:'numeric',year:'numeric'}) : '';
+
+  // Build the meta line
+  let metaParts = [];
+  if(dateStr) metaParts.push(dateStr);
+  if(m.direction) metaParts.push(m.direction);
+  if(m.type && kind==='meeting') metaParts.push(m.type);
+  const metaStr = metaParts.join(' · ');
+
+  // Build the detail rows
+  let details = '';
+  if(kind==='call') {
+    if(m.contact) details += `<div class="comm-detail"><strong>Contact:</strong> ${m.contact}${m.org?' — '+m.org:''}</div>`;
+    if(m.phone) details += `<div class="comm-detail"><strong>Phone:</strong> <a href="tel:${m.phone}" style="color:var(--accent)">${m.phone}</a></div>`;
+  } else if(kind==='email') {
+    if(m.from) details += `<div class="comm-detail"><strong>From:</strong> ${m.from}</div>`;
+    if(m.to) details += `<div class="comm-detail"><strong>To:</strong> ${m.to}</div>`;
+    if(m.cc) details += `<div class="comm-detail"><strong>CC:</strong> ${m.cc}</div>`;
+  } else {
+    if(m.attendees) details += `<div class="comm-detail"><strong>Attendees:</strong> ${m.attendees}</div>`;
+  }
+
+  const followupPill = m.followup ? `<span class="pill ${m.followup==='Urgent'?'pill-open':m.followup==='Done'?'pill-approved':'pill-pending'}" style="font-size:10px">${m.followup}</span>` : '';
+
   div.innerHTML = `
     <div class="rfi-head" onclick="toggleMeeting('${id}')">
-      <span class="rfi-num" style="background:var(--navy)">&#x1F4CB;</span>
+      <span class="rfi-num" style="background:${accentColor};font-size:14px">${icon}</span>
       <span class="rfi-title" id="mtg-title-${id}">${m.title}</span>
-      <span class="rfi-meta" id="mtg-meta-${id}">${dateStr}${m.type?' &middot; '+m.type:''}</span>
-      <span class="rfi-toggle" id="mtg-tog-${id}">&#x25BE;</span>
+      <span class="rfi-meta" id="mtg-meta-${id}">${metaStr}</span>
+      ${followupPill}
+      <span class="rfi-toggle" id="mtg-tog-${id}">▾</span>
     </div>
     <div class="rfi-body" id="mtg-body-${id}">
-      <div id="mtg-attendees-${id}" style="font-size:12px;color:var(--gray3);margin-bottom:8px;">${m.attendees?'<strong>Attendees:</strong> '+m.attendees:''}</div>
-      <div class="rfi-desc" id="mtg-notes-${id}">${m.notes?(m.notes.replace(/\n/g,'<br>')):''}</div>
+      <div id="mtg-details-${id}">${details}</div>
+      ${m.notes?`<div class="rfi-desc" id="mtg-notes-${id}" style="margin-top:${details?'10px':'0'}">${m.notes.replace(/\n/g,'<br>')}</div>`:`<div id="mtg-notes-${id}"></div>`}
       <div style="display:flex;align-items:center;gap:10px;margin-top:14px;flex-wrap:wrap;">
         ${m.pdfUrl
-          ? `<a href="${m.pdfUrl}" target="_blank" class="pdf-link-btn has-file" id="mtg-pdf-${id}">&#x2705; ${m.pdfName||'Meeting Minutes'}</a>`
-          : `<label class="pdf-link-btn no-file" id="mtg-pdf-${id}" style="cursor:pointer;">&#x1F4C4; Attach Minutes<input type="file" accept=".pdf" style="display:none" onchange="attachMeetingPDF(event,'${id}')"/></label>`
+          ? `<a href="${m.pdfUrl}" target="_blank" class="pdf-link-btn has-file" id="mtg-pdf-${id}">✅ ${m.pdfName||'Attachment'}</a>`
+          : `<label class="pdf-link-btn no-file" id="mtg-pdf-${id}" style="cursor:pointer;">📎 Attach File<input type="file" accept=".pdf,.msg,.eml" style="display:none" onchange="attachMeetingPDF(event,'${id}')"/></label>`
         }
         <button class="btn-sm btn-outline" onclick="editMeeting('${id}')">Edit</button>
         <button class="btn-sm btn-outline" style="margin-left:auto;color:var(--gray3)" onclick="removeMeeting('${id}')">Remove</button>
@@ -1797,7 +1878,7 @@ async function removeMeeting(id) {
   document.getElementById('mtg-card-'+id)?.remove();
   if(FIREBASE_READY) await db.collection('meetings').doc(id).delete();
   if(!document.getElementById('meetings-list').querySelector('.rfi-card'))
-    document.getElementById('meetings-list').innerHTML='<div class="empty-state" id="meetings-empty">No meetings logged yet</div>';
+    document.getElementById('meetings-list').innerHTML='<div class="empty-state" id="meetings-empty">No communications logged yet</div>';
   logActivity('Meeting removed');
 }
 
