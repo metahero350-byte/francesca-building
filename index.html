@@ -161,9 +161,14 @@ body{font-family:'Segoe UI',system-ui,-apple-system,sans-serif;background:var(--
   .btn-save,.btn-cancel{padding:13px 20px;font-size:13px;width:100%;margin-bottom:6px;}
   .form-actions{flex-direction:column;}
 
-  /* ── Team table: hide email, allow scroll ── */
-  .team-table{display:block;overflow-x:auto;-webkit-overflow-scrolling:touch;}
-  .team-table th:nth-child(4),.team-table td:nth-child(4){display:none;}
+  /* ── Team: card layout on mobile, hide the table chrome ── */
+  .team-table thead{display:none;}
+  .team-table,.team-table tbody{display:block;width:100%;}
+  .team-table tr{display:flex;flex-direction:column;background:var(--white);border:1px solid var(--gray2);border-radius:8px;margin-bottom:10px;padding:12px 14px;gap:4px;}
+  .team-table td{display:block;padding:0;border:none;font-size:13px;}
+  .team-table td:last-child{display:flex;gap:8px;margin-top:8px;padding-top:8px;border-top:1px solid var(--gray2);}
+  .team-table td .tel-link{color:var(--navy);}
+  .team-table td[style*="font-weight:600"]{font-size:15px;margin-bottom:2px;}
 
   /* ── RFI / Comms cards ── */
   .rfi-head{flex-wrap:wrap;gap:6px;}
@@ -1312,11 +1317,10 @@ function renderTeamRow(t) {
   if (isNew) { tr = document.createElement('tr'); tr.id = 'team-row-' + t.id; tbody.appendChild(tr); }
   tr.innerHTML = `
     <td><span class="role-badge ${cls}">${t.role}</span></td>
-    <td style="font-weight:600">${t.name}</td>
-    <td><a class="tel-link" href="tel:${t.phone}">${t.phone||'—'}</a></td>
-    <td style="color:var(--gray3)">${t.email ? '<a class="tel-link" href="mailto:'+t.email+'">'+t.email+'</a>' : '—'}</td>
-    <td style="text-align:right;padding-right:12px;white-space:nowrap;">
-      <button class="btn-sm btn-outline" style="margin-right:4px" onclick="editTeamMember('${t.id}')">Edit</button>
+    <td style="font-weight:600;font-size:15px">${t.name}</td>
+    <td style="color:var(--gray3);font-size:12px">${t.phone ? '<a class="tel-link" href="tel:'+t.phone+'">📞 '+t.phone+'</a>' : ''} ${t.email ? '<a class="tel-link" href="mailto:'+t.email+'" style="margin-left:8px">✉️ '+t.email+'</a>' : ''}</td>
+    <td style="text-align:right;padding-right:0;white-space:nowrap;border-top:1px solid var(--gray2);padding-top:8px;margin-top:4px">
+      <button class="btn-sm btn-outline" style="margin-right:6px" onclick="editTeamMember('${t.id}')">Edit</button>
       <button class="action-btn" title="Remove" onclick="removeTeamMember('${t.id}')">&#x2715;</button>
     </td>`;
 }
