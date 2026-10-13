@@ -48,7 +48,7 @@ body{font-family:'Segoe UI',system-ui,-apple-system,sans-serif;background:var(--
 .login-title{font-size:22px;font-weight:300;color:var(--navy2);letter-spacing:1px;margin-bottom:28px;}
 .login-field{margin-bottom:16px;}
 .login-field label{display:block;font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--gray3);font-weight:600;margin-bottom:6px;}
-.login-field input{width:100%;padding:10px 12px;border:1px solid var(--gray2);font-size:14px;font-family:inherit;color:var(--black);transition:border-color 0.2s;}
+.login-field input{width:100%;padding:12px 12px;border:1px solid var(--gray2);font-size:16px;font-family:inherit;color:var(--black);transition:border-color 0.2s;}
 .login-field input:focus{outline:none;border-color:var(--navy);}
 .login-btn{width:100%;padding:12px;background:var(--navy);color:var(--white);border:none;font-size:11px;letter-spacing:3px;text-transform:uppercase;cursor:pointer;margin-top:8px;transition:background 0.2s;}
 .login-btn:hover:not(:disabled){background:var(--navy3);}
@@ -103,15 +103,25 @@ body{font-family:'Segoe UI',system-ui,-apple-system,sans-serif;background:var(--
 .field-error{border-color:var(--red)!important;animation:shake 0.35s ease;}
 .field-error-msg{font-size:11px;color:var(--red);margin-top:4px;}
 @media(max-width:768px){
-  .content{padding-bottom:80px;}
+  /* ── Layout ── */
+  .content{padding:14px 12px calc(80px + env(safe-area-inset-bottom,0px));}
+  .page-header{margin-bottom:14px;}
+  .page-title{font-size:18px;}
+  .page-subtitle{font-size:12px;}
+
+  /* ── Bottom nav ── */
   .bottom-nav{display:flex;position:fixed;bottom:0;left:0;right:0;height:60px;background:var(--navy2);border-top:1px solid rgba(255,255,255,0.08);z-index:190;align-items:stretch;box-shadow:0 -4px 18px rgba(0,0,0,0.35);padding-bottom:env(safe-area-inset-bottom,0);}
-  .bn-item{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;background:none;border:none;color:rgba(255,255,255,0.5);font-size:9px;gap:3px;cursor:pointer;transition:color 0.18s;-webkit-tap-highlight-color:transparent;padding:0;}
+  .bn-item{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;background:none;border:none;color:rgba(255,255,255,0.5);font-size:9px;gap:3px;cursor:pointer;transition:color 0.18s;-webkit-tap-highlight-color:transparent;padding:0;min-height:44px;}
   .bn-item.active{color:var(--accent);}
-  .bn-icon{width:20px;height:20px;}
+  .bn-icon{width:22px;height:22px;}
   .bn-fab-space{pointer-events:none;opacity:0;}
-  .mobile-fab{display:flex;position:fixed;bottom:calc(28px + env(safe-area-inset-bottom,0px));left:50%;transform:translateX(-50%);width:54px;height:54px;border-radius:50%;background:var(--accent);color:var(--navy2);border:none;cursor:pointer;align-items:center;justify-content:center;box-shadow:0 4px 18px rgba(201,169,110,0.55);z-index:195;-webkit-tap-highlight-color:transparent;transition:transform 0.18s;}
+
+  /* ── FAB ── */
+  .mobile-fab{display:flex;position:fixed;bottom:calc(28px + env(safe-area-inset-bottom,0px));left:50%;transform:translateX(-50%);width:56px;height:56px;border-radius:50%;background:var(--accent);color:var(--navy2);border:none;cursor:pointer;align-items:center;justify-content:center;box-shadow:0 4px 18px rgba(201,169,110,0.55);z-index:195;-webkit-tap-highlight-color:transparent;transition:transform 0.18s;}
   .mobile-fab:active{transform:translateX(-50%) scale(0.93);}
   .sidebar-collapse-btn{display:none;}
+
+  /* ── More drawer ── */
   .more-drawer-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.45);z-index:210;}
   .more-drawer-overlay.open{display:block;}
   .more-drawer{position:fixed;bottom:0;left:0;right:0;background:var(--navy2);border-radius:18px 18px 0 0;z-index:220;padding:8px 20px calc(20px + env(safe-area-inset-bottom,0px));transform:translateY(100%);transition:transform 0.28s ease;}
@@ -120,7 +130,57 @@ body{font-family:'Segoe UI',system-ui,-apple-system,sans-serif;background:var(--
   .more-drawer-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;}
   .more-item{display:flex;flex-direction:column;align-items:center;gap:7px;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.08);border-radius:10px;padding:14px 8px;color:rgba(255,255,255,0.8);font-size:11px;cursor:pointer;-webkit-tap-highlight-color:transparent;}
   .more-item svg{width:22px;height:22px;}
+
+  /* ── Stat row: 2-up on phone ── */
+  .stat-row{grid-template-columns:repeat(2,1fr);gap:8px;margin-bottom:14px;}
+  .stat-card{padding:12px 12px;}
+  .stat-value{font-size:22px;}
+
+  /* ── Card grid: single column ── */
+  .card-grid{grid-template-columns:1fr;gap:12px;}
+
+  /* ── Form modal: full-screen sheet on mobile ── */
+  #form-modal{align-items:flex-end;}
+  .form-box{width:100%!important;max-width:100%!important;max-height:92vh;border-radius:18px 18px 0 0;}
+
+  /* ── Stack two-column form rows ── */
+  .form-row-2{grid-template-columns:1fr;}
+
+  /* ── Larger touch targets & readable inputs (prevents iOS zoom) ── */
+  .form-control,.form-label{font-size:16px!important;}
+  .form-control{padding:11px 12px;}
+  .btn-save,.btn-cancel{padding:13px 20px;font-size:13px;width:100%;margin-bottom:6px;}
+  .form-actions{flex-direction:column;}
+
+  /* ── Team table: hide email, allow scroll ── */
+  .team-table{display:block;overflow-x:auto;-webkit-overflow-scrolling:touch;}
+  .team-table th:nth-child(4),.team-table td:nth-child(4){display:none;}
+
+  /* ── RFI / Comms cards ── */
+  .rfi-head{flex-wrap:wrap;gap:6px;}
+  .rfi-title{font-size:13px;width:100%;}
+  .rfi-meta{font-size:11px;}
+
+  /* ── Login box ── */
+  .login-box{padding:28px 20px;width:100%!important;max-width:100%!important;border-radius:0;min-height:100dvh;justify-content:center;display:flex;flex-direction:column;}
+
+  /* ── Topbar ── */
+  .topbar{padding:0 14px;}
+  .topbar-crumb{display:none;}
+
+  /* ── Buttons min touch size ── */
+  .btn-sm{min-height:36px;padding:8px 12px;}
+  .card-btn{min-height:36px;padding:6px 12px;}
 }
+
+/* ── Tablet (portrait iPad, etc.) ── */
+@media(min-width:769px) and (max-width:1024px){
+  .content{padding:18px 18px;}
+  .stat-row{grid-template-columns:repeat(4,1fr);}
+  .card-grid{grid-template-columns:repeat(2,1fr);}
+  .form-row-2{grid-template-columns:1fr 1fr;}
+}
+
 @media(min-width:769px){.mobile-fab{display:none!important;}.more-drawer,.more-drawer-overlay{display:none!important;}}
 .fb-indicator{display:inline-flex;align-items:center;gap:5px;margin-top:6px;font-size:10px;color:var(--gray3);}
 .fb-dot{width:6px;height:6px;border-radius:50%;background:var(--gray3);}
