@@ -348,20 +348,18 @@ body{font-family:'Segoe UI',system-ui,-apple-system,sans-serif;background:var(--
     <div class="login-logo">Francesca's Building</div>
     <div class="login-title">Partner Access</div>
     <div class="login-field">
-      <label>Email</label>
-      <input type="email" id="login-email" placeholder="your@email.com" autocomplete="email" onkeydown="if(event.key==='Enter')doLogin()"/>
+      <label>Access Code</label>
+      <input type="password" id="login-pass" placeholder="Enter access code" autocomplete="off" onkeydown="if(event.key==='Enter')doLogin()"/>
     </div>
-    <div class="login-field">
-      <label>Password</label>
-      <input type="password" id="login-pass" placeholder="••••••••" autocomplete="current-password" onkeydown="if(event.key==='Enter')doLogin()"/>
-    </div>
-    <button class="login-btn" id="login-btn" onclick="doLogin()">Sign In</button>
-    <div class="login-divider">or</div>
-    <button class="google-btn" id="google-btn" onclick="doGoogleLogin()">
-      <svg width="18" height="18" viewBox="0 0 18 18"><path fill="#4285F4" d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844c-.209 1.125-.843 2.078-1.796 2.716v2.259h2.908c1.702-1.567 2.684-3.875 2.684-6.615z"/><path fill="#34A853" d="M9 18c2.43 0 4.467-.806 5.956-2.18l-2.908-2.259c-.806.54-1.837.86-3.048.86-2.344 0-4.328-1.584-5.036-3.711H.957v2.332A8.997 8.997 0 0 0 9 18z"/><path fill="#FBBC05" d="M3.964 10.71A5.41 5.41 0 0 1 3.682 9c0-.593.102-1.17.282-1.71V4.958H.957A8.996 8.996 0 0 0 0 9c0 1.452.348 2.827.957 4.042l3.007-2.332z"/><path fill="#EA4335" d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0A8.997 8.997 0 0 0 .957 4.958L3.964 6.29C4.672 4.163 6.656 3.58 9 3.58z"/></svg>
-      Continue with Google
-    </button>
+    <button class="login-btn" id="login-btn" onclick="doLogin()">Enter Site</button>
     <div class="login-err" id="login-err"></div>
+    <div style="margin-top:18px;border-top:1px solid var(--gray2);padding-top:14px;">
+      <div style="font-size:10px;letter-spacing:1px;text-transform:uppercase;color:var(--gray3);margin-bottom:10px;">Or sign in with your account</div>
+      <button class="google-btn" id="google-btn" onclick="doGoogleLogin()">
+        <svg width="18" height="18" viewBox="0 0 18 18"><path fill="#4285F4" d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844c-.209 1.125-.843 2.078-1.796 2.716v2.259h2.908c1.702-1.567 2.684-3.875 2.684-6.615z"/><path fill="#34A853" d="M9 18c2.43 0 4.467-.806 5.956-2.18l-2.908-2.259c-.806.54-1.837.86-3.048.86-2.344 0-4.328-1.584-5.036-3.711H.957v2.332A8.997 8.997 0 0 0 9 18z"/><path fill="#FBBC05" d="M3.964 10.71A5.41 5.41 0 0 1 3.682 9c0-.593.102-1.17.282-1.71V4.958H.957A8.996 8.996 0 0 0 0 9c0 1.452.348 2.827.957 4.042l3.007-2.332z"/><path fill="#EA4335" d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0A8.997 8.997 0 0 0 .957 4.958L3.964 6.29C4.672 4.163 6.656 3.58 9 3.58z"/></svg>
+        Continue with Google
+      </button>
+    </div>
   </div>
 </div>
 
@@ -873,23 +871,31 @@ function firebaseOnline() {
   initFirebaseListeners();
 }
 
+// ── SITE ACCESS PASSCODE (change this to whatever you want) ──
+const SITE_PASSCODE = 'Francesca350';
+
 try {
   firebase.initializeApp(firebaseConfig);
   db = firebase.firestore();
   storage = firebase.storage();
-  // Watch auth state — email/password login required
+  // Always sign in anonymously so data ALWAYS persists — independent of UI login gate
+  firebase.auth().signInAnonymously()
+    .then(() => {
+      firebaseOnline(); // FIREBASE_READY = true → all saves go to Firestore
+    })
+    .catch(err => {
+      console.warn('Anon auth failed:', err.code);
+      // Firestore rules may allow open access — try anyway
+      FIREBASE_READY = true;
+      firebaseOnline();
+    });
+  // Also watch for named sign-ins (Google/email) to show user info in sidebar
   firebase.auth().onAuthStateChanged(user => {
-    if (user) {
-      // Signed in — show user email in sidebar
+    if (user && user.email) {
       const lbl = document.getElementById('user-email-label');
-      if(lbl){ lbl.textContent = user.email || 'Signed in'; lbl.style.display=''; }
+      if(lbl){ lbl.textContent = user.email; lbl.style.display=''; }
       const sob = document.getElementById('signout-btn');
       if(sob) sob.style.display='';
-      firebaseOnline();
-    } else {
-      // Not signed in
-      const mfb = document.getElementById('module-firebase');
-      if(mfb){ mfb.className='pill pill-pending'; mfb.textContent='Sign In Required'; }
     }
   });
 } catch(e) { console.warn('Firebase init error:', e); }
@@ -900,14 +906,13 @@ document.addEventListener('DOMContentLoaded', function() {
   seedTeam();
   // After cover animation, auto-show login OR enter if already authenticated
   setTimeout(() => {
-    if (firebase.auth().currentUser) {
+    if (sessionStorage.getItem('fb_access') === '1') {
       showApp();
     } else {
-      // Auto-open login modal — user doesn't need to click Enter Site
       document.getElementById('login-modal').classList.add('open');
-      setTimeout(() => document.getElementById('login-email').focus(), 80);
+      setTimeout(() => document.getElementById('login-pass').focus(), 80);
     }
-  }, 3000); // 3s — enough for the cover animation to complete
+  }, 3000);
 });
 
 /* ── FIREBASE HELPERS ── */
@@ -1032,78 +1037,63 @@ function initFirebaseListeners() {
 function enterSite() {
   const cover = document.getElementById('cover');
   if (cover.style.display === 'none') return;
-  // If already signed in, go straight in
-  if (firebase.auth().currentUser) { showApp(); return; }
-  // Otherwise prompt login
+  // Check session storage — already verified this session
+  if (sessionStorage.getItem('fb_access') === '1') { showApp(); return; }
+  // Otherwise show the gate
   document.getElementById('login-modal').classList.add('open');
-  setTimeout(() => document.getElementById('login-email').focus(), 80);
+  setTimeout(() => document.getElementById('login-pass').focus(), 80);
 }
 
 function showApp() {
   document.getElementById('login-modal').classList.remove('open');
+  sessionStorage.setItem('fb_access', '1');
   const cover = document.getElementById('cover');
   cover.classList.add('fade-out');
   setTimeout(() => { cover.style.display='none'; document.getElementById('app').classList.add('visible'); }, 1200);
 }
 
-async function doLogin() {
-  const email = document.getElementById('login-email').value.trim();
-  const pass  = document.getElementById('login-pass').value;
+function doLogin() {
+  const pass  = document.getElementById('login-pass').value.trim();
   const errEl = document.getElementById('login-err');
-  const btn   = document.getElementById('login-btn');
   errEl.textContent = '';
-  if (!email || !pass) { errEl.textContent = 'Enter your email and password.'; return; }
-  btn.textContent = 'Signing in…'; btn.disabled = true;
-  try {
-    await firebase.auth().signInWithEmailAndPassword(email, pass);
-    showApp();
-  } catch(e) {
-    const msg = (e.code === 'auth/wrong-password' || e.code === 'auth/user-not-found' || e.code === 'auth/invalid-credential')
-      ? 'Invalid email or password.'
-      : e.code === 'auth/too-many-requests'
-      ? 'Too many attempts — try again later.'
-      : e.code === 'auth/operation-not-allowed'
-      ? 'Email/password sign-in is not enabled. Use Google sign-in below or contact the admin.'
-      : e.message;
-    errEl.textContent = msg;
-    btn.textContent = 'Sign In'; btn.disabled = false;
-  }
+  if (!pass) { errEl.textContent = 'Enter the access code.'; return; }
+  if (pass !== SITE_PASSCODE) { errEl.textContent = 'Incorrect access code.'; return; }
+  showApp();
 }
 
 async function doGoogleLogin() {
   const errEl = document.getElementById('login-err');
   const btn   = document.getElementById('google-btn');
   errEl.textContent = '';
-  btn.disabled = true; btn.textContent = 'Opening Google…';
+  btn.disabled = true;
+  btn.innerHTML = 'Opening Google…';
   try {
     const provider = new firebase.auth.GoogleAuthProvider();
     await firebase.auth().signInWithPopup(provider);
     showApp();
   } catch(e) {
     const msg = e.code === 'auth/popup-closed-by-user' ? 'Sign-in cancelled.'
-      : e.code === 'auth/operation-not-allowed' ? 'Google sign-in not enabled — contact admin.'
+      : e.code === 'auth/operation-not-allowed' ? 'Google sign-in not enabled in Firebase console.'
       : e.message;
     errEl.textContent = msg;
     btn.disabled = false;
-    btn.innerHTML = '<svg width="18" height="18" viewBox="0 0 18 18"><path fill="#4285F4" d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844c-.209 1.125-.843 2.078-1.796 2.716v2.259h2.908c1.702-1.567 2.684-3.875 2.684-6.615z"/><path fill="#34A853" d="M9 18c2.43 0 4.467-.806 5.956-2.18l-2.908-2.259c-.806.54-1.837.86-3.048.86-2.344 0-4.328-1.584-5.036-3.711H.957v2.332A8.997 8.997 0 0 0 9 18z"/><path fill="#FBBC05" d="M3.964 10.71A5.41 5.41 0 0 1 3.682 9c0-.593.102-1.17.282-1.71V4.958H.957A8.996 8.996 0 0 0 0 9c0 1.452.348 2.827.957 4.042l3.007-2.332z"/><path fill="#EA4335" d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0A8.997 8.997 0 0 0 .957 4.958L3.964 6.29C4.672 4.163 6.656 3.58 9 3.58z"/></svg>Continue with Google';
+    btn.innerHTML = '<svg width="18" height="18" viewBox="0 0 18 18"><path fill="#4285F4" d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844c-.209 1.125-.843 2.078-1.796 2.716v2.259h2.908c1.702-1.567 2.684-3.875 2.684-6.615z"/><path fill="#34A853" d="M9 18c2.43 0 4.467-.806 5.956-2.18l-2.908-2.259c-.806.54-1.837.86-3.048.86-2.344 0-4.328-1.584-5.036-3.711H.957v2.332A8.997 8.997 0 0 0 9 18z"/><path fill="#FBBC05" d="M3.964 10.71A5.41 5.41 0 0 1 3.682 9c0-.593.102-1.17.282-1.71V4.958H.957A8.996 8.996 0 0 0 0 9c0 1.452.348 2.827.957 4.042l3.007-2.332z"/><path fill="#EA4335" d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0A8.997 8.997 0 0 0 .957 4.958L3.964 6.29C4.672 4.163 6.656 3.58 9 3.58z"/></svg> Continue with Google';
   }
 }
 
 function doSignOut() {
-  if (!confirm('Sign out of Francesca\'s Building?')) return;
-  firebase.auth().signOut().then(() => {
-    // Reset app state
-    document.getElementById('app').classList.remove('visible');
-    FIREBASE_READY = false;
-    const cover = document.getElementById('cover');
-    cover.style.display = '';
-    cover.classList.remove('fade-out');
-    const lbl = document.getElementById('user-email-label');
-    if(lbl){ lbl.textContent=''; lbl.style.display='none'; }
-    document.getElementById('signout-btn').style.display = 'none';
-    const mfb = document.getElementById('module-firebase');
-    if(mfb){ mfb.className='pill pill-pending'; mfb.textContent='Sign In Required'; }
-  });
+  if (!confirm('Lock the site?')) return;
+  sessionStorage.removeItem('fb_access');
+  document.getElementById('app').classList.remove('visible');
+  const cover = document.getElementById('cover');
+  cover.style.display = '';
+  cover.classList.remove('fade-out');
+  // Re-show gate after a moment
+  setTimeout(() => {
+    document.getElementById('login-modal').classList.add('open');
+    document.getElementById('login-pass').value = '';
+    setTimeout(() => document.getElementById('login-pass').focus(), 80);
+  }, 400);
 }
 
 /* ── NAVIGATION ── */
