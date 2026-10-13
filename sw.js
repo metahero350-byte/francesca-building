@@ -1,4 +1,4 @@
-const CACHE='fb-project-v11';
+const CACHE='fb-project-v12';
 const SHELL=['/index.html'];
 self.addEventListener('install',e=>{
   e.waitUntil(caches.open(CACHE).then(c=>c.addAll(SHELL)));
