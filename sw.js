@@ -1,5 +1,5 @@
-const CACHE='fb-project-v13';
-const SHELL=['/index.html'];
+const CACHE='fb-project-v14';
+const SHELL=['/index.html','manifest.json','icon-192.png','icon-512.png'];
 self.addEventListener('install',e=>{
   e.waitUntil(caches.open(CACHE).then(c=>c.addAll(SHELL)));
   self.skipWaiting(); // activate immediately, don't wait for tabs to close
