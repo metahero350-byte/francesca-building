@@ -565,6 +565,19 @@ body{font-family:'Segoe UI',system-ui,-apple-system,sans-serif;background:var(--
             </div>
           </div>
 
+          <!-- Recent Communications — full width -->
+          <div class="card card-full">
+            <div class="card-head">
+              <span class="card-title">Recent Communications</span>
+              <button class="card-btn" onclick="navigate('meetings',null);syncBottomNav('meetings')">View All →</button>
+            </div>
+            <div class="card-body" style="padding:0">
+              <div id="dash-comms-list" style="padding:0 4px">
+                <div class="empty-state" id="dash-comms-empty" style="padding:18px 0">No communications logged yet</div>
+              </div>
+            </div>
+          </div>
+
           <!-- Team & Stakeholders — full width -->
           <div class="card card-full">
             <div class="card-head">
@@ -1006,9 +1019,11 @@ function initFirebaseListeners() {
   db.collection('meetings').orderBy('_ts','desc').onSnapshot(snap => {
     const list = document.getElementById('meetings-list');
     list.innerHTML = '';
-    if(snap.empty){ list.innerHTML='<div class="empty-state" id="meetings-empty">No communications logged yet</div>'; return; }
-    snap.forEach(doc => renderMeetingCard({...doc.data(), fsId:doc.id}));
+    if(snap.empty){ list.innerHTML='<div class="empty-state" id="meetings-empty">No communications logged yet</div>'; }
+    else { snap.forEach(doc => renderMeetingCard({...doc.data(), fsId:doc.id})); }
     document.getElementById('stat-meetings').textContent = snap.size;
+    // Dashboard preview — most recent 3
+    renderDashComms(snap.docs.slice(0,3).map(d=>({...d.data(),fsId:d.id})));
   });
   // Team count stat
   db.collection('team').onSnapshot(snap => {
@@ -1969,11 +1984,10 @@ function renderMeetingCard(m) {
   document.getElementById('mtg-card-'+id)?.remove();
   const div = document.createElement('div');
   div.className = 'rfi-card'; div.id = 'mtg-card-'+id;
+  const kind = m.kind || 'meeting';
   // store raw values for edit restore
   div.dataset.commKind = kind;
   ['date','direction','type','contact','org','phone','from','to','cc','attendees','followup'].forEach(k => { if(m[k]) div.dataset['comm_'+k]=m[k]; });
-
-  const kind = m.kind || 'meeting';
   const icon = kind==='call' ? '📞' : kind==='email' ? '✉️' : '📋';
   const accentColor = kind==='call' ? 'var(--green)' : kind==='email' ? 'var(--accent)' : 'var(--navy)';
   const dateStr = m.date ? new Date(m.date+'T12:00:00').toLocaleDateString([],{month:'short',day:'numeric',year:'numeric'}) : '';
@@ -2021,6 +2035,30 @@ function renderMeetingCard(m) {
       </div>
     </div>`;
   list.appendChild(div);
+}
+
+function renderDashComms(entries) {
+  const container = document.getElementById('dash-comms-list');
+  if (!container) return;
+  if (!entries || !entries.length) {
+    container.innerHTML = '<div class="empty-state" id="dash-comms-empty" style="padding:18px 0">No communications logged yet</div>';
+    return;
+  }
+  container.innerHTML = entries.map(m => {
+    const kind = m.kind || 'meeting';
+    const icon = kind==='call' ? '📞' : kind==='email' ? '✉️' : '📋';
+    const dateStr = m.date ? new Date(m.date+'T12:00:00').toLocaleDateString([],{month:'short',day:'numeric',year:'numeric'}) : '';
+    const sub = kind==='call' ? (m.contact||'') : kind==='email' ? (m.from ? 'From: '+m.from : '') : (m.attendees||'');
+    const followupPill = m.followup ? `<span class="pill ${m.followup==='Urgent'?'pill-open':m.followup==='Done'?'pill-approved':'pill-pending'}" style="font-size:10px;margin-left:6px">${m.followup}</span>` : '';
+    return `<div style="display:flex;align-items:center;gap:10px;padding:11px 14px;border-bottom:1px solid var(--gray2);cursor:pointer" onclick="navigate('meetings',null);syncBottomNav('meetings')">
+      <span style="font-size:18px;flex-shrink:0">${icon}</span>
+      <div style="flex:1;min-width:0">
+        <div style="font-weight:600;font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${m.title||'—'}${followupPill}</div>
+        <div style="font-size:11px;color:var(--gray3);margin-top:2px">${[dateStr,sub].filter(Boolean).join(' · ')}</div>
+      </div>
+      <span style="font-size:11px;color:var(--gray3);flex-shrink:0">→</span>
+    </div>`;
+  }).join('');
 }
 
 function toggleMeeting(id) {
