@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
-<title>Francesca's Building — Project Management</title>
+<title>Franchesca's Building — Project Management</title>
 
 <!-- Firebase SDK (v10 compat) -->
 <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
@@ -345,7 +345,7 @@ body{font-family:'Segoe UI',system-ui,-apple-system,sans-serif;background:var(--
 <!-- LOGIN MODAL -->
 <div id="login-modal">
   <div class="login-box">
-    <div class="login-logo">Francesca's Building</div>
+    <div class="login-logo">Franchesca's Building</div>
     <div class="login-title">Partner Access</div>
     <div class="login-field">
       <label>Access Code</label>
@@ -374,7 +374,7 @@ body{font-family:'Segoe UI',system-ui,-apple-system,sans-serif;background:var(--
   <div id="building-photo"></div>
   <div class="cover-gradient"></div>
   <div class="cover-content">
-    <h1 class="cover-title">Francesca's Building</h1>
+    <h1 class="cover-title">Franchesca's Building</h1>
     <p class="cover-subtitle">Former Donald Wexler Building</p>
     <p class="cover-address">350 S. Indian Canyon Drive &middot; Palm Springs, CA</p>
     <button class="enter-btn" onclick="enterSite()">Enter Site</button>
@@ -433,7 +433,7 @@ body{font-family:'Segoe UI',system-ui,-apple-system,sans-serif;background:var(--
     </div>
 
     <div class="sidebar-footer">
-      <div class="sidebar-footer-meta">Francesca's Building &copy; 2026
+      <div class="sidebar-footer-meta">Franchesca's Building &copy; 2026
         <div class="fb-indicator" id="fb-indicator"><div class="fb-dot" id="fb-dot"></div><span id="fb-status-text">No Firebase</span></div>
         <div class="user-email-label" id="user-email-label" style="margin-top:4px;display:none;"></div>
       </div>
@@ -452,7 +452,7 @@ body{font-family:'Segoe UI',system-ui,-apple-system,sans-serif;background:var(--
   <div class="main">
     <div class="topbar">
       <span class="topbar-title" id="topbar-label">Dashboard</span>
-      <span class="topbar-crumb">/ Francesca's Building</span>
+      <span class="topbar-crumb">/ Franchesca's Building</span>
       <div class="topbar-right">
         <button class="topbar-btn" id="topbar-action-btn" onclick="topbarAction()">+ Add</button>
         <div class="topbar-avatar">FB</div>
@@ -506,7 +506,7 @@ body{font-family:'Segoe UI',system-ui,-apple-system,sans-serif;background:var(--
             <div class="card-head"><span class="card-title">Project Information</span></div>
             <div class="card-body">
               <table class="info-table">
-                <tr><td>Building Name</td><td>Francesca's Building</td></tr>
+                <tr><td>Building Name</td><td>Franchesca's Building</td></tr>
                 <tr><td>Former Name</td><td>Donald Wexler Building</td></tr>
                 <tr><td>Address</td><td>350 S. Indian Canyon Drive<br>Palm Springs, CA</td></tr>
                 <tr><td>Phase</td><td><span class="pill pill-coming">TBD</span></td></tr>
@@ -872,7 +872,7 @@ function firebaseOnline() {
 }
 
 // ── SITE ACCESS PASSCODE (change this to whatever you want) ──
-const SITE_PASSCODE = 'Francesca350';
+const SITE_PASSCODE = 'Franchesca350';
 
 try {
   firebase.initializeApp(firebaseConfig);
@@ -1206,17 +1206,18 @@ async function seedTeam() {
 function renderTeamRow(t) {
   const tbody = document.getElementById('team-tbody');
   const cls = ROLE_CLASS[t.role] || 'role-other';
-  const tr = document.createElement('tr');
-  tr.id = 'team-row-' + t.id;
+  let tr = document.getElementById('team-row-' + t.id);
+  const isNew = !tr;
+  if (isNew) { tr = document.createElement('tr'); tr.id = 'team-row-' + t.id; tbody.appendChild(tr); }
   tr.innerHTML = `
     <td><span class="role-badge ${cls}">${t.role}</span></td>
     <td style="font-weight:600">${t.name}</td>
     <td><a class="tel-link" href="tel:${t.phone}">${t.phone||'—'}</a></td>
     <td style="color:var(--gray3)">${t.email ? '<a class="tel-link" href="mailto:'+t.email+'">'+t.email+'</a>' : '—'}</td>
-    <td style="text-align:right;padding-right:12px;">
+    <td style="text-align:right;padding-right:12px;white-space:nowrap;">
+      <button class="btn-sm btn-outline" style="margin-right:4px" onclick="editTeamMember('${t.id}')">Edit</button>
       <button class="action-btn" title="Remove" onclick="removeTeamMember('${t.id}')">&#x2715;</button>
     </td>`;
-  tbody.appendChild(tr);
 }
 
 function updateTeamStats() {
@@ -1514,7 +1515,7 @@ function openFormModal(type) {
   document.getElementById('form-modal').classList.add('open');
 }
 
-function closeFormModal() { document.getElementById('form-modal').classList.remove('open'); _editingMeetingId = null; window._commType = null; }
+function closeFormModal() { document.getElementById('form-modal').classList.remove('open'); _editingMeetingId = null; _editingTeamId = null; window._commType = null; }
 
 function requireField(el,msg){
   if(!el) return false;
@@ -1687,6 +1688,27 @@ async function updateRFIStatus(id, val) {
 /* ══════════════════════════════════
    TEAM SAVE
 ══════════════════════════════════ */
+let _editingTeamId = null;
+
+function editTeamMember(id) {
+  const t = teamData[id];
+  if (!t) return;
+  _editingTeamId = id;
+  openFormModal('team');
+  setTimeout(() => {
+    const role = document.getElementById('fm-team-role');
+    const name = document.getElementById('fm-team-name');
+    const phone = document.getElementById('fm-team-phone');
+    const email = document.getElementById('fm-team-email');
+    const btn = document.querySelector('#form-modal .btn-save');
+    if(role) role.value = t.role || 'Other';
+    if(name) name.value = t.name || '';
+    if(phone) phone.value = t.phone || '';
+    if(email) email.value = t.email || '';
+    if(btn) btn.textContent = 'Update Member';
+  }, 60);
+}
+
 async function saveTeamMember() {
   if (!requireField(document.getElementById('fm-team-name'),'Name is required')) return;
   const name = document.getElementById('fm-team-name').value.trim();
@@ -1695,8 +1717,20 @@ async function saveTeamMember() {
     name,
     phone: document.getElementById('fm-team-phone').value.trim(),
     email: document.getElementById('fm-team-email').value.trim(),
-    order: Object.keys(teamData).length + 1,
   };
+
+  if (_editingTeamId) {
+    const id = _editingTeamId;
+    _editingTeamId = null;
+    teamData[id] = {...teamData[id], ...data};
+    if (FIREBASE_READY) await db.collection('team').doc(id).update({...data, _ts:firebase.firestore.FieldValue.serverTimestamp()});
+    renderTeamRow(teamData[id]);
+    logActivity('Team member updated: '+name);
+    closeFormModal();
+    return;
+  }
+
+  data.order = Object.keys(teamData).length + 1;
   const id = await fsAdd('team', data);
   data.id = id;
   if (!FIREBASE_READY) {
