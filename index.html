@@ -265,6 +265,25 @@ body{font-family:'Segoe UI',system-ui,-apple-system,sans-serif;background:var(--
 .role-other{background:var(--gray);color:var(--navy);}
 .tel-link{color:var(--navy);text-decoration:none;font-weight:500;}
 .tel-link:hover{text-decoration:underline;}
+/* ── ROLE GATING ── */
+body.viewer-mode .card-btn,
+body.viewer-mode .topbar-btn,
+body.viewer-mode #mobile-fab,
+body.viewer-mode .toolbar .btn-primary,
+body.viewer-mode .btn-sm,
+body.viewer-mode .action-btn { display:none !important; }
+
+/* ── TOAST ── */
+#toast{position:fixed;bottom:80px;left:50%;transform:translateX(-50%) translateY(20px);background:var(--navy2);color:var(--white);font-size:13px;padding:9px 18px;border-radius:24px;z-index:2000;opacity:0;transition:opacity 0.3s,transform 0.3s;pointer-events:none;white-space:nowrap;}
+#toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+
+/* ── USER MANAGEMENT ── */
+.user-role-card{background:var(--white);border:1px solid var(--gray2);border-radius:8px;padding:12px 16px;margin-bottom:8px;display:flex;align-items:center;gap:12px;}
+.user-role-email{flex:1;font-size:14px;font-weight:500;color:var(--navy);}
+.user-role-badge{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;padding:3px 10px;border-radius:12px;}
+.role-admin{background:#E8EEF8;color:#1B4DA0;}
+.role-viewer{background:var(--gray);color:var(--navy);}
+
 /* Building Contacts */
 .contact-card{background:var(--white);border:1px solid var(--gray2);border-radius:8px;padding:14px 16px;margin-bottom:10px;}
 .contact-card-header{display:flex;justify-content:space-between;align-items:flex-start;gap:10px;margin-bottom:8px;}
@@ -475,6 +494,7 @@ body{font-family:'Segoe UI',system-ui,-apple-system,sans-serif;background:var(--
 </div>
 
 <!-- APP -->
+<div id="toast"></div>
 <div class="sidebar-overlay" id="sidebar-overlay" onclick="closeSidebar()"></div>
 <div id="app">
   <!-- SIDEBAR -->
@@ -530,6 +550,10 @@ body{font-family:'Segoe UI',system-ui,-apple-system,sans-serif;background:var(--
       Reports<span class="nav-badge">Soon</span>
     </div>
 
+    <div class="nav-item" id="nav-usermgmt" data-page="usermgmt" data-label="User Management" style="display:none">
+      <svg class="nav-icon" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+      User Access
+    </div>
     <div class="sidebar-footer">
       <div class="sidebar-footer-meta">Francesca Building &copy; 2026
         <div class="fb-indicator" id="fb-indicator"><div class="fb-dot" id="fb-dot"></div><span id="fb-status-text">No Firebase</span></div>
@@ -886,6 +910,30 @@ body{font-family:'Segoe UI',system-ui,-apple-system,sans-serif;background:var(--
         <div id="meetings-list"><div class="empty-state" id="meetings-empty">No communications logged yet</div></div>
       </div>
 
+      <!-- ═══ USER ACCESS ═══ -->
+      <div class="page" id="page-usermgmt">
+        <div class="page-header">
+          <div class="page-title">User Access</div>
+          <div class="page-subtitle">Control who can view or edit this project. Add users by email address.</div>
+        </div>
+        <div class="card card-full" style="margin-bottom:16px;">
+          <div class="card-head"><span class="card-title">Add / Update User</span></div>
+          <div class="card-body" style="display:flex;flex-direction:column;gap:12px;">
+            <div class="form-row-2">
+              <div class="form-group"><label class="form-label">Email Address</label><input class="form-control" id="um-email" type="email" placeholder="user@company.com"/></div>
+              <div class="form-group"><label class="form-label">Role</label>
+                <select class="form-control" id="um-role">
+                  <option value="viewer">Viewer — can see everything, cannot edit</option>
+                  <option value="admin">Admin — full edit access</option>
+                </select>
+              </div>
+            </div>
+            <div><button class="btn-primary" onclick="saveUserRole()">Save User</button></div>
+          </div>
+        </div>
+        <div id="usermgmt-list"><div class="empty-state" id="usermgmt-empty">No users configured yet</div></div>
+      </div>
+
       <!-- ═══ BUILDING CONTACTS ═══ -->
       <div class="page" id="page-contacts">
         <div class="page-header">
@@ -1002,9 +1050,31 @@ function firebaseOnline() {
 
 let _authResolved = false;
 let _coverDone = false;
-function tryGate(user) {
+let USER_ROLE = 'viewer'; // default safe — overwritten after role fetch
+let CURRENT_USER = null;
+
+function canWrite() { return USER_ROLE === 'admin'; }
+
+function applyRoleUI() {
+  document.body.classList.toggle('viewer-mode', USER_ROLE !== 'admin');
+  // Show user management nav only for admins
+  const umNav = document.getElementById('nav-usermgmt');
+  if (umNav) umNav.style.display = USER_ROLE === 'admin' ? '' : 'none';
+}
+
+async function fetchUserRole(user) {
+  if (!user) return;
+  try {
+    const doc = await db.collection('userRoles').doc(user.email).get();
+    USER_ROLE = doc.exists ? (doc.data().role || 'viewer') : 'viewer';
+  } catch(e) { USER_ROLE = 'viewer'; }
+  applyRoleUI();
+}
+
+async function tryGate(user) {
   if (!_authResolved || !_coverDone) return;
   if (user) {
+    await fetchUserRole(user);
     showApp();
   } else {
     document.getElementById('login-modal').classList.add('open');
@@ -1016,9 +1086,9 @@ try {
   firebase.initializeApp(firebaseConfig);
   db = firebase.firestore();
   storage = firebase.storage();
-  firebase.auth().onAuthStateChanged(user => {
+  firebase.auth().onAuthStateChanged(async user => {
+    CURRENT_USER = user;
     if (user) {
-      // Authenticated user — bring Firebase online and update sidebar
       if (!FIREBASE_READY) firebaseOnline();
       const lbl = document.getElementById('user-email-label');
       if(lbl){ lbl.textContent = user.email || 'Signed in'; lbl.style.display=''; }
@@ -1026,7 +1096,7 @@ try {
       if(sob) sob.style.display='';
     }
     _authResolved = true;
-    tryGate(user);
+    await tryGate(user);
   });
 } catch(e) { console.warn('Firebase init error:', e); }
 
@@ -1071,6 +1141,7 @@ async function fsDelete(col, id) {
 function initFirebaseListeners() {
   initProjectFilesListener();
   initContacts();
+  initUserMgmt();
   // AHJ
   db.doc('project/ahj').onSnapshot(snap => {
     if (!snap.exists) return;
@@ -1242,6 +1313,7 @@ const pageCfg = {
   schedule:   {label:'Schedule',         action:'schedule'},
   meetings:   {label:'Communications Log', action:'meeting'},
   contacts:   {label:'Building Contacts',  action:'contact'},
+  usermgmt:   {label:'User Access',        action:null},
 };
 const actionLabels = {docs:'+ Upload',photos:'+ Upload',submittal:'+ New Submittal',rfi:'+ New RFI',schedule:'+ Add Phase',meeting:'+ Log Communication',contact:'+ Add Contact'};
 
@@ -1451,6 +1523,7 @@ async function handleFiles(e, type) {
   if(barEl) barEl.classList.remove('active');
   if(progEl) progEl.style.width='0%';
   updateStats();
+  showToast(`✓ ${files.length} file${files.length>1?'s':''} uploaded`);
   e.target.value='';
 }
 
@@ -1906,6 +1979,73 @@ async function saveTeamMember() {
   }
   logActivity('Team member added: '+name);
   closeFormModal();
+}
+
+/* ══════════════════════════════════
+   TOAST
+══════════════════════════════════ */
+let _toastTimer = null;
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  if (!t) return;
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(_toastTimer);
+  _toastTimer = setTimeout(() => t.classList.remove('show'), 3000);
+}
+
+/* ══════════════════════════════════
+   USER ACCESS MANAGEMENT
+══════════════════════════════════ */
+function initUserMgmt() {
+  if (!FIREBASE_READY) return;
+  db.collection('userRoles').onSnapshot(snap => {
+    const list = document.getElementById('usermgmt-list');
+    if (!list) return;
+    list.innerHTML = '<div class="empty-state" id="usermgmt-empty" style="display:none"></div>';
+    snap.forEach(doc => renderUserRoleCard(doc.id, doc.data()));
+    document.getElementById('usermgmt-empty').style.display = snap.empty ? '' : 'none';
+    if (snap.empty) document.getElementById('usermgmt-empty').textContent = 'No users configured yet';
+  });
+}
+
+function renderUserRoleCard(email, data) {
+  const div = document.createElement('div');
+  div.className = 'user-role-card';
+  const role = data.role || 'viewer';
+  div.innerHTML = `
+    <div class="user-role-email">${email}</div>
+    <span class="user-role-badge ${role==='admin'?'role-admin':'role-viewer'}">${role}</span>
+    <button class="btn-sm btn-outline" onclick="toggleUserRole('${email}','${role}')">
+      ${role==='admin'?'Make Viewer':'Make Admin'}
+    </button>
+    <button class="action-btn" title="Remove" onclick="removeUserRole('${email}')">&#x2715;</button>`;
+  document.getElementById('usermgmt-list').appendChild(div);
+}
+
+async function saveUserRole() {
+  const email = document.getElementById('um-email').value.trim().toLowerCase();
+  const role  = document.getElementById('um-role').value;
+  if (!email) { showToast('Enter an email address'); return; }
+  if (!FIREBASE_READY) { showToast('Firebase not ready'); return; }
+  await db.collection('userRoles').doc(email).set({role, updatedBy: CURRENT_USER?.email||'', _ts: firebase.firestore.FieldValue.serverTimestamp()});
+  document.getElementById('um-email').value = '';
+  showToast(`✓ ${email} saved as ${role}`);
+  logActivity(`User access updated: ${email} → ${role}`);
+}
+
+async function toggleUserRole(email, currentRole) {
+  const newRole = currentRole === 'admin' ? 'viewer' : 'admin';
+  await db.collection('userRoles').doc(email).update({role: newRole, _ts: firebase.firestore.FieldValue.serverTimestamp()});
+  showToast(`✓ ${email} → ${newRole}`);
+  // If changing own role, re-apply UI
+  if (CURRENT_USER?.email === email) { USER_ROLE = newRole; applyRoleUI(); }
+}
+
+async function removeUserRole(email) {
+  if (!confirm(`Remove access for ${email}?`)) return;
+  await db.collection('userRoles').doc(email).delete();
+  showToast(`${email} removed`);
 }
 
 /* ══════════════════════════════════
