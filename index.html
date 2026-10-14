@@ -391,6 +391,8 @@ body.viewer-mode button.action-btn { display:none !important; }
 .pf-item-size{font-size:11px;color:var(--gray3);flex-shrink:0;}
 .pf-item-del{background:none;border:none;color:var(--gray3);cursor:pointer;font-size:13px;padding:2px 6px;flex-shrink:0;}
 .pf-item-del:hover{color:var(--red);}
+.pf-item-dl{color:var(--gray3);font-size:13px;padding:2px 5px;text-decoration:none;flex-shrink:0;}
+.pf-item-dl:hover{color:var(--accent);}
 .pf-uploading{font-size:11px;color:var(--accent);font-weight:600;}
 .doc-section-title-input{border:none;background:transparent;font-size:10px;letter-spacing:2px;text-transform:uppercase;font-weight:700;color:var(--navy);font-family:inherit;min-width:120px;}
 .doc-section-title-input:focus{outline:none;border-bottom:1px solid var(--accent);}
@@ -2278,7 +2280,8 @@ async function pfUpload(e, cat) {
   e.target.value='';
 }
 function pfRowHTML(id, name, size, url) {
-  return `<span class="pf-item-icon">&#x1F4C4;</span><a class="pf-item-name" href="${url}" target="_blank" title="${name}">${name}</a><span class="pf-item-size">${fmtBytes(size)}</span><button class="pf-item-del" onclick="pfDelete(this,'${id}')" title="Remove">&#x2715;</button>`;
+  const viewerUrl = 'https://docs.google.com/gviewer?embedded=true&url='+encodeURIComponent(url);
+  return `<span class="pf-item-icon">&#x1F4C4;</span><a class="pf-item-name" href="${viewerUrl}" target="_blank" title="View ${name}">${name}</a><a class="pf-item-dl" href="${url}" target="_blank" download title="Download directly">&#x2B07;</a><span class="pf-item-size">${fmtBytes(size)}</span><button class="pf-item-del" onclick="pfDelete(this,'${id}')" title="Remove">&#x2715;</button>`;
 }
 async function pfDelete(btn, id) {
   if(!confirm('Remove this file?')) return;
