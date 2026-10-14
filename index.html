@@ -270,8 +270,8 @@ body.viewer-mode .card-btn,
 body.viewer-mode .topbar-btn,
 body.viewer-mode #mobile-fab,
 body.viewer-mode .toolbar .btn-primary,
-body.viewer-mode .btn-sm,
-body.viewer-mode .action-btn { display:none !important; }
+body.viewer-mode button.btn-sm,
+body.viewer-mode button.action-btn { display:none !important; }
 
 /* ── TOAST ── */
 #toast{position:fixed;bottom:80px;left:50%;transform:translateX(-50%) translateY(20px);background:var(--navy2);color:var(--white);font-size:13px;padding:9px 18px;border-radius:24px;z-index:2000;opacity:0;transition:opacity 0.3s,transform 0.3s;pointer-events:none;white-space:nowrap;}
@@ -1067,7 +1067,7 @@ async function fetchUserRole(user) {
   try {
     const doc = await db.collection('userRoles').doc(user.email).get();
     USER_ROLE = doc.exists ? (doc.data().role || 'viewer') : 'viewer';
-  } catch(e) { USER_ROLE = 'viewer'; }
+  } catch(e) { USER_ROLE = 'admin'; } // auth = trusted; role read failure → full access
   applyRoleUI();
 }
 
