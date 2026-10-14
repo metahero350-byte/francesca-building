@@ -3,13 +3,13 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
-<title>Franchesca's Building — Project Management</title>
+<title>Francesca Building — Project Management</title>
 <link rel="manifest" href="manifest.json"/>
 <link rel="apple-touch-icon" href="icon-192.png"/>
 <meta name="theme-color" content="#061529"/>
 <meta name="apple-mobile-web-app-capable" content="yes"/>
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
-<meta name="apple-mobile-web-app-title" content="Franchesca"/>
+<meta name="apple-mobile-web-app-title" content="Francesca"/>
 
 <!-- Firebase SDK (v10 compat) -->
 <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
@@ -265,6 +265,15 @@ body{font-family:'Segoe UI',system-ui,-apple-system,sans-serif;background:var(--
 .role-other{background:var(--gray);color:var(--navy);}
 .tel-link{color:var(--navy);text-decoration:none;font-weight:500;}
 .tel-link:hover{text-decoration:underline;}
+/* Building Contacts */
+.contact-card{background:var(--white);border:1px solid var(--gray2);border-radius:8px;padding:14px 16px;margin-bottom:10px;}
+.contact-card-header{display:flex;justify-content:space-between;align-items:flex-start;gap:10px;margin-bottom:8px;}
+.contact-name{font-weight:600;font-size:15px;color:var(--navy);}
+.contact-title{font-size:12px;color:var(--gray3);margin-top:2px;}
+.contact-company{font-size:12px;color:var(--gray3);font-style:italic;}
+.contact-links{display:flex;flex-wrap:wrap;gap:12px;font-size:12px;margin-bottom:4px;}
+.contact-notes{font-size:12px;color:var(--gray3);margin-top:6px;padding-top:6px;border-top:1px solid var(--gray2);}
+.contact-actions{display:flex;gap:6px;flex-shrink:0;}
 .action-btn{background:none;border:none;color:var(--gray3);cursor:pointer;font-size:13px;padding:3px 6px;border-radius:2px;transition:all 0.2s;}
 .action-btn:hover{color:var(--red);background:#FFF0EF;}
 
@@ -425,11 +434,15 @@ body{font-family:'Segoe UI',system-ui,-apple-system,sans-serif;background:var(--
 <!-- LOGIN MODAL -->
 <div id="login-modal">
   <div class="login-box">
-    <div class="login-logo">Franchesca's Building</div>
+    <div class="login-logo">Francesca Building</div>
     <div class="login-title">Partner Access</div>
     <div class="login-field">
-      <label>Access Code</label>
-      <input type="password" id="login-pass" placeholder="Enter access code" autocomplete="off" onkeydown="if(event.key==='Enter')doLogin()"/>
+      <label>Email</label>
+      <input type="email" id="login-email" placeholder="you@company.com" autocomplete="email" onkeydown="if(event.key==='Enter')document.getElementById('login-pass').focus()"/>
+    </div>
+    <div class="login-field">
+      <label>Password</label>
+      <input type="password" id="login-pass" placeholder="Password" autocomplete="current-password" onkeydown="if(event.key==='Enter')doLogin()"/>
     </div>
     <button class="login-btn" id="login-btn" onclick="doLogin()">Enter Site</button>
     <div class="login-err" id="login-err"></div>
@@ -454,7 +467,7 @@ body{font-family:'Segoe UI',system-ui,-apple-system,sans-serif;background:var(--
   <div id="building-photo"></div>
   <div class="cover-gradient"></div>
   <div class="cover-content">
-    <h1 class="cover-title">Franchesca's Building</h1>
+    <h1 class="cover-title">Francesca Building</h1>
     <p class="cover-subtitle">Former Donald Wexler Building</p>
     <p class="cover-address">350 S. Indian Canyon Drive &middot; Palm Springs, CA</p>
     <button class="enter-btn" onclick="enterSite()">Enter Site</button>
@@ -491,6 +504,10 @@ body{font-family:'Segoe UI',system-ui,-apple-system,sans-serif;background:var(--
       Project Files
     </div>
 
+    <div class="nav-item" data-page="contacts" data-label="Building Contacts">
+      <svg class="nav-icon" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><line x1="23" y1="11" x2="17" y2="11"/><line x1="20" y1="8" x2="20" y2="14"/></svg>
+      Building Contacts
+    </div>
     <div class="sidebar-section-label">Construction</div>
     <div class="nav-item" data-page="submittals" data-label="Submittals">
       <svg class="nav-icon" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path d="M9 12l2 2 4-4m6 2a9 9 0 1 1-18 0 9 9 0 0 1 18 0z"/></svg>
@@ -514,7 +531,7 @@ body{font-family:'Segoe UI',system-ui,-apple-system,sans-serif;background:var(--
     </div>
 
     <div class="sidebar-footer">
-      <div class="sidebar-footer-meta">Franchesca's Building &copy; 2026
+      <div class="sidebar-footer-meta">Francesca Building &copy; 2026
         <div class="fb-indicator" id="fb-indicator"><div class="fb-dot" id="fb-dot"></div><span id="fb-status-text">No Firebase</span></div>
         <div class="user-email-label" id="user-email-label" style="margin-top:4px;display:none;"></div>
       </div>
@@ -536,7 +553,7 @@ body{font-family:'Segoe UI',system-ui,-apple-system,sans-serif;background:var(--
         <svg width="22" height="22" viewBox="0 0 22 22" fill="none"><rect x="2" y="5" width="18" height="2" rx="1" fill="currentColor"/><rect x="2" y="10" width="18" height="2" rx="1" fill="currentColor"/><rect x="2" y="15" width="18" height="2" rx="1" fill="currentColor"/></svg>
       </button>
       <span class="topbar-title" id="topbar-label">Dashboard</span>
-      <span class="topbar-crumb">/ Franchesca's Building</span>
+      <span class="topbar-crumb">/ Francesca Building</span>
       <div class="topbar-right">
         <button class="topbar-btn" id="topbar-action-btn" onclick="topbarAction()">+ Add</button>
         <div class="topbar-avatar">FB</div>
@@ -590,7 +607,7 @@ body{font-family:'Segoe UI',system-ui,-apple-system,sans-serif;background:var(--
             <div class="card-head"><span class="card-title">Project Information</span></div>
             <div class="card-body">
               <table class="info-table">
-                <tr><td>Building Name</td><td>Franchesca's Building</td></tr>
+                <tr><td>Building Name</td><td>Francesca Building</td></tr>
                 <tr><td>Former Name</td><td>Donald Wexler Building</td></tr>
                 <tr><td>Address</td><td>350 S. Indian Canyon Drive<br>Palm Springs, CA</td></tr>
                 <tr><td>Phase</td><td><span class="pill pill-coming">TBD</span></td></tr>
@@ -869,6 +886,17 @@ body{font-family:'Segoe UI',system-ui,-apple-system,sans-serif;background:var(--
         <div id="meetings-list"><div class="empty-state" id="meetings-empty">No communications logged yet</div></div>
       </div>
 
+      <!-- ═══ BUILDING CONTACTS ═══ -->
+      <div class="page" id="page-contacts">
+        <div class="page-header">
+          <div class="page-title">Building Contacts</div>
+          <div class="page-subtitle">Key contacts for the building — vendors, inspectors, city officials, utilities</div>
+        </div>
+        <div id="contacts-list">
+          <div class="empty-state" id="contacts-empty">No contacts added yet</div>
+        </div>
+      </div>
+
     </div><!-- /content -->
   </div><!-- /main -->
 </div><!-- /app -->
@@ -910,6 +938,9 @@ body{font-family:'Segoe UI',system-ui,-apple-system,sans-serif;background:var(--
     </button>
     <button class="more-item" onclick="navigate('schedule',null);syncBottomNav('schedule');closeMoreDrawer()">
       <svg fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>Schedule
+    </button>
+    <button class="more-item" onclick="navigate('contacts',null);syncBottomNav('contacts');closeMoreDrawer()">
+      <svg fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><line x1="23" y1="11" x2="17" y2="11"/><line x1="20" y1="8" x2="20" y2="14"/></svg>Contacts
     </button>
   </div>
 </div>
@@ -968,32 +999,34 @@ function firebaseOnline() {
   initFirebaseListeners();
 }
 
-// ── SITE ACCESS PASSCODE (change this to whatever you want) ──
-const SITE_PASSCODE = 'Franchesca350';
+
+let _authResolved = false;
+let _coverDone = false;
+function tryGate(user) {
+  if (!_authResolved || !_coverDone) return;
+  if (user) {
+    showApp();
+  } else {
+    document.getElementById('login-modal').classList.add('open');
+    setTimeout(() => document.getElementById('login-email').focus(), 80);
+  }
+}
 
 try {
   firebase.initializeApp(firebaseConfig);
   db = firebase.firestore();
   storage = firebase.storage();
-  // Always sign in anonymously so data ALWAYS persists — independent of UI login gate
-  firebase.auth().signInAnonymously()
-    .then(() => {
-      firebaseOnline(); // FIREBASE_READY = true → all saves go to Firestore
-    })
-    .catch(err => {
-      console.warn('Anon auth failed:', err.code);
-      // Firestore rules may allow open access — try anyway
-      FIREBASE_READY = true;
-      firebaseOnline();
-    });
-  // Also watch for named sign-ins (Google/email) to show user info in sidebar
   firebase.auth().onAuthStateChanged(user => {
-    if (user && user.email) {
+    if (user) {
+      // Authenticated user — bring Firebase online and update sidebar
+      if (!FIREBASE_READY) firebaseOnline();
       const lbl = document.getElementById('user-email-label');
-      if(lbl){ lbl.textContent = user.email; lbl.style.display=''; }
+      if(lbl){ lbl.textContent = user.email || 'Signed in'; lbl.style.display=''; }
       const sob = document.getElementById('signout-btn');
       if(sob) sob.style.display='';
     }
+    _authResolved = true;
+    tryGate(user);
   });
 } catch(e) { console.warn('Firebase init error:', e); }
 
@@ -1001,15 +1034,7 @@ document.addEventListener('DOMContentLoaded', function() {
   document.getElementById('building-photo').style.backgroundImage = "url('" + IMG_DATA_URL + "')";
   initNav();
   seedTeam();
-  // After cover animation, auto-show login OR enter if already authenticated
-  setTimeout(() => {
-    if (sessionStorage.getItem('fb_access') === '1') {
-      showApp();
-    } else {
-      document.getElementById('login-modal').classList.add('open');
-      setTimeout(() => document.getElementById('login-pass').focus(), 80);
-    }
-  }, 3000);
+  setTimeout(() => { _coverDone = true; tryGate(firebase.auth().currentUser); }, 3000);
 });
 
 /* ── FIREBASE HELPERS ── */
@@ -1045,6 +1070,7 @@ async function fsDelete(col, id) {
 
 function initFirebaseListeners() {
   initProjectFilesListener();
+  initContacts();
   // AHJ
   db.doc('project/ahj').onSnapshot(snap => {
     if (!snap.exists) return;
@@ -1136,28 +1162,38 @@ function initFirebaseListeners() {
 function enterSite() {
   const cover = document.getElementById('cover');
   if (cover.style.display === 'none') return;
-  // Check session storage — already verified this session
-  if (sessionStorage.getItem('fb_access') === '1') { showApp(); return; }
-  // Otherwise show the gate
+  const user = firebase.auth().currentUser;
+  if (user) { showApp(); return; }
   document.getElementById('login-modal').classList.add('open');
-  setTimeout(() => document.getElementById('login-pass').focus(), 80);
+  setTimeout(() => document.getElementById('login-email').focus(), 80);
 }
 
 function showApp() {
   document.getElementById('login-modal').classList.remove('open');
-  sessionStorage.setItem('fb_access', '1');
   const cover = document.getElementById('cover');
   cover.classList.add('fade-out');
   setTimeout(() => { cover.style.display='none'; document.getElementById('app').classList.add('visible'); }, 1200);
 }
 
-function doLogin() {
-  const pass  = document.getElementById('login-pass').value.trim();
+async function doLogin() {
+  const email = document.getElementById('login-email').value.trim();
+  const pass  = document.getElementById('login-pass').value;
   const errEl = document.getElementById('login-err');
+  const btn   = document.getElementById('login-btn');
   errEl.textContent = '';
-  if (!pass) { errEl.textContent = 'Enter the access code.'; return; }
-  if (pass !== SITE_PASSCODE) { errEl.textContent = 'Incorrect access code.'; return; }
-  showApp();
+  if (!email || !pass) { errEl.textContent = 'Enter your email and password.'; return; }
+  btn.disabled = true; btn.textContent = 'Signing in…';
+  try {
+    await firebase.auth().signInWithEmailAndPassword(email, pass);
+    // onAuthStateChanged will call showApp()
+  } catch(e) {
+    const msg = e.code === 'auth/user-not-found' || e.code === 'auth/wrong-password' || e.code === 'auth/invalid-credential'
+      ? 'Incorrect email or password.'
+      : e.code === 'auth/too-many-requests' ? 'Too many attempts. Try again later.'
+      : e.message;
+    errEl.textContent = msg;
+  }
+  btn.disabled = false; btn.textContent = 'Enter Site';
 }
 
 async function doGoogleLogin() {
@@ -1180,18 +1216,18 @@ async function doGoogleLogin() {
   }
 }
 
-function doSignOut() {
-  if (!confirm('Lock the site?')) return;
-  sessionStorage.removeItem('fb_access');
+async function doSignOut() {
+  if (!confirm('Sign out and lock the site?')) return;
+  await firebase.auth().signOut();
   document.getElementById('app').classList.remove('visible');
   const cover = document.getElementById('cover');
   cover.style.display = '';
   cover.classList.remove('fade-out');
-  // Re-show gate after a moment
   setTimeout(() => {
     document.getElementById('login-modal').classList.add('open');
+    document.getElementById('login-email').value = '';
     document.getElementById('login-pass').value = '';
-    setTimeout(() => document.getElementById('login-pass').focus(), 80);
+    setTimeout(() => document.getElementById('login-email').focus(), 80);
   }, 400);
 }
 
@@ -1205,8 +1241,9 @@ const pageCfg = {
   rfis:       {label:'RFIs',             action:'rfi'},
   schedule:   {label:'Schedule',         action:'schedule'},
   meetings:   {label:'Communications Log', action:'meeting'},
+  contacts:   {label:'Building Contacts',  action:'contact'},
 };
-const actionLabels = {docs:'+ Upload',photos:'+ Upload',submittal:'+ New Submittal',rfi:'+ New RFI',schedule:'+ Add Phase',meeting:'+ Log Communication'};
+const actionLabels = {docs:'+ Upload',photos:'+ Upload',submittal:'+ New Submittal',rfi:'+ New RFI',schedule:'+ Add Phase',meeting:'+ Log Communication',contact:'+ Add Contact'};
 
 function initNav() {
   document.querySelectorAll('.nav-item[data-page]').forEach(el => {
@@ -1266,6 +1303,7 @@ function runAction(a){
   else if(a==='schedule') addScheduleRow();
   else if(a==='meeting') openCommLog('meeting');
   else if(a==='docs') addCustomDocSection();
+  else if(a==='contact') openFormModal('contact');
 }
 function topbarAction(){ runAction(document.getElementById('topbar-action-btn').dataset.action); }
 
@@ -1323,7 +1361,7 @@ function renderTeamRow(t) {
   if (isNew) { tr = document.createElement('tr'); tr.id = 'team-row-' + t.id; tbody.appendChild(tr); }
   tr.innerHTML = `
     <td><span class="role-badge ${cls}">${t.role}</span></td>
-    <td style="font-weight:600;font-size:15px">${t.name}</td>
+    <td><div style="font-weight:600;font-size:15px">${t.name}</div>${t.title?`<div style="font-size:12px;color:var(--gray3);margin-top:2px">${t.title}</div>`:''}</td>
     <td style="color:var(--gray3);font-size:12px">${t.phone ? '<a class="tel-link" href="tel:'+t.phone+'">📞 '+t.phone+'</a>' : ''} ${t.email ? '<a class="tel-link" href="mailto:'+t.email+'" style="margin-left:8px">✉️ '+t.email+'</a>' : ''}</td>
     <td style="text-align:right;padding-right:0;white-space:nowrap;border-top:1px solid var(--gray2);padding-top:8px;margin-top:4px">
       <button class="btn-sm btn-outline" style="margin-right:6px" onclick="editTeamMember('${t.id}')">Edit</button>
@@ -1571,11 +1609,26 @@ function openFormModal(type) {
         </select>
       </div>
       <div class="form-group"><label class="form-label">Name / Company</label><input class="form-control" id="fm-team-name" placeholder="Full name or company"/></div>
+      <div class="form-group"><label class="form-label">Title</label><input class="form-control" id="fm-team-title" placeholder="e.g. Principal Architect, VP of Construction"/></div>
       <div class="form-row-2">
         <div class="form-group"><label class="form-label">Phone</label><input class="form-control" id="fm-team-phone" type="tel" placeholder="555-000-0000"/></div>
         <div class="form-group"><label class="form-label">Email</label><input class="form-control" id="fm-team-email" type="email" placeholder="name@company.com"/></div>
       </div>
       <div class="form-actions"><button class="btn-cancel" onclick="closeFormModal()">Cancel</button><button class="btn-save" onclick="saveTeamMember()">Add Member</button></div>`;
+  } else if (type==='contact') {
+    document.getElementById('form-modal-title').textContent = '📇 Building Contact';
+    body.innerHTML=`
+      <div class="form-row-2">
+        <div class="form-group"><label class="form-label">Name *</label><input class="form-control" id="fm-contact-name" placeholder="Full name"/></div>
+        <div class="form-group"><label class="form-label">Title / Role</label><input class="form-control" id="fm-contact-title" placeholder="e.g. Building Inspector"/></div>
+      </div>
+      <div class="form-group"><label class="form-label">Company / Organization</label><input class="form-control" id="fm-contact-company" placeholder="Company or agency name"/></div>
+      <div class="form-row-2">
+        <div class="form-group"><label class="form-label">Phone</label><input class="form-control" id="fm-contact-phone" type="tel" placeholder="555-000-0000"/></div>
+        <div class="form-group"><label class="form-label">Email</label><input class="form-control" id="fm-contact-email" type="email" placeholder="name@company.com"/></div>
+      </div>
+      <div class="form-group"><label class="form-label">Notes</label><textarea class="form-control" id="fm-contact-notes" rows="3" placeholder="Additional info, hours, address..."></textarea></div>
+      <div class="form-actions"><button class="btn-cancel" onclick="closeFormModal()">Cancel</button><button class="btn-save" onclick="saveContact()">${'_editingContactId' in window && window._editingContactId ? 'Update Contact' : 'Add Contact'}</button></div>`;
   } else if (type==='meeting') {
     // default commType is 'meeting' unless set by openCommLog
     const ct = window._commType || 'meeting';
@@ -1626,7 +1679,7 @@ function openFormModal(type) {
   document.getElementById('form-modal').classList.add('open');
 }
 
-function closeFormModal() { document.getElementById('form-modal').classList.remove('open'); _editingMeetingId = null; _editingTeamId = null; window._commType = null; }
+function closeFormModal() { document.getElementById('form-modal').classList.remove('open'); _editingMeetingId = null; _editingTeamId = null; _editingContactId = null; window._commType = null; }
 
 function requireField(el,msg){
   if(!el) return false;
@@ -1812,8 +1865,10 @@ function editTeamMember(id) {
     const phone = document.getElementById('fm-team-phone');
     const email = document.getElementById('fm-team-email');
     const btn = document.querySelector('#form-modal .btn-save');
+    const title = document.getElementById('fm-team-title');
     if(role) role.value = t.role || 'Other';
     if(name) name.value = t.name || '';
+    if(title) title.value = t.title || '';
     if(phone) phone.value = t.phone || '';
     if(email) email.value = t.email || '';
     if(btn) btn.textContent = 'Update Member';
@@ -1826,6 +1881,7 @@ async function saveTeamMember() {
   const data = {
     role:  document.getElementById('fm-team-role').value,
     name,
+    title: (document.getElementById('fm-team-title')?.value||'').trim(),
     phone: document.getElementById('fm-team-phone').value.trim(),
     email: document.getElementById('fm-team-email').value.trim(),
   };
@@ -1850,6 +1906,110 @@ async function saveTeamMember() {
   }
   logActivity('Team member added: '+name);
   closeFormModal();
+}
+
+/* ══════════════════════════════════
+   BUILDING CONTACTS
+══════════════════════════════════ */
+let contactsData = {};
+let _editingContactId = null;
+
+function initContacts() {
+  if (!FIREBASE_READY) return;
+  db.collection('buildingContacts').orderBy('order').onSnapshot(snap => {
+    document.getElementById('contacts-list').innerHTML = '<div class="empty-state" id="contacts-empty" style="display:none"></div>';
+    contactsData = {};
+    snap.forEach(doc => {
+      contactsData[doc.id] = {...doc.data(), id:doc.id};
+      renderContactCard(contactsData[doc.id]);
+    });
+    document.getElementById('contacts-empty').style.display = snap.empty ? '' : 'none';
+    if (snap.empty) document.getElementById('contacts-empty').textContent = 'No contacts added yet';
+  });
+}
+
+function renderContactCard(c) {
+  let card = document.getElementById('contact-card-' + c.id);
+  const isNew = !card;
+  if (isNew) {
+    card = document.createElement('div');
+    card.id = 'contact-card-' + c.id;
+    card.className = 'contact-card';
+    document.getElementById('contacts-list').appendChild(card);
+  }
+  card.innerHTML = `
+    <div class="contact-card-header">
+      <div>
+        <div class="contact-name">${c.name}</div>
+        ${c.title ? `<div class="contact-title">${c.title}</div>` : ''}
+        ${c.company ? `<div class="contact-company">${c.company}</div>` : ''}
+      </div>
+      <div class="contact-actions">
+        <button class="btn-sm btn-outline" onclick="editContact('${c.id}')">Edit</button>
+        <button class="action-btn" title="Remove" onclick="removeContact('${c.id}')">&#x2715;</button>
+      </div>
+    </div>
+    <div class="contact-links">
+      ${c.phone ? `<a class="tel-link" href="tel:${c.phone}">📞 ${c.phone}</a>` : ''}
+      ${c.email ? `<a class="tel-link" href="mailto:${c.email}">✉️ ${c.email}</a>` : ''}
+    </div>
+    ${c.notes ? `<div class="contact-notes">${c.notes}</div>` : ''}`;
+}
+
+function editContact(id) {
+  const c = contactsData[id];
+  if (!c) return;
+  _editingContactId = id;
+  openFormModal('contact');
+  setTimeout(() => {
+    const set = (sel, val) => { const el = document.getElementById(sel); if(el) el.value = val||''; };
+    set('fm-contact-name', c.name);
+    set('fm-contact-title', c.title);
+    set('fm-contact-company', c.company);
+    set('fm-contact-phone', c.phone);
+    set('fm-contact-email', c.email);
+    set('fm-contact-notes', c.notes);
+    const btn = document.querySelector('#form-modal .btn-save');
+    if (btn) btn.textContent = 'Update Contact';
+  }, 60);
+}
+
+async function saveContact() {
+  const nameEl = document.getElementById('fm-contact-name');
+  if (!requireField(nameEl, 'Name is required')) return;
+  const data = {
+    name:    nameEl.value.trim(),
+    title:   (document.getElementById('fm-contact-title')?.value||'').trim(),
+    company: (document.getElementById('fm-contact-company')?.value||'').trim(),
+    phone:   (document.getElementById('fm-contact-phone')?.value||'').trim(),
+    email:   (document.getElementById('fm-contact-email')?.value||'').trim(),
+    notes:   (document.getElementById('fm-contact-notes')?.value||'').trim(),
+  };
+  if (_editingContactId) {
+    const id = _editingContactId;
+    _editingContactId = null;
+    contactsData[id] = {...contactsData[id], ...data};
+    if (FIREBASE_READY) await db.collection('buildingContacts').doc(id).update({...data, _ts:firebase.firestore.FieldValue.serverTimestamp()});
+    renderContactCard(contactsData[id]);
+    logActivity('Contact updated: '+data.name);
+    closeFormModal();
+    return;
+  }
+  data.order = Object.keys(contactsData).length + 1;
+  const id = await fsAdd('buildingContacts', data);
+  data.id = id;
+  if (!FIREBASE_READY) { contactsData[id] = data; renderContactCard(data); }
+  logActivity('Contact added: '+data.name);
+  closeFormModal();
+}
+
+async function removeContact(id) {
+  if (!confirm('Remove this contact?')) return;
+  const el = document.getElementById('contact-card-' + id);
+  if (el) el.remove();
+  delete contactsData[id];
+  if (FIREBASE_READY) await db.collection('buildingContacts').doc(id).delete();
+  logActivity('Contact removed');
 }
 
 /* ══════════════════════════════════
